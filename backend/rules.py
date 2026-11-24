@@ -188,20 +188,7 @@ FACTORS = [
     "Failure consequence",
 ]
 LEVEL = {"Low": 0, "Medium": 1, "High": 2}
-S, R, SEC, CX, SZ = (
-    "Requirement stability",
-    "Regulatory criticality",
-    "Security risk",
-    "Project complexity",
-    "System size",
-)
-CH, CD, SH, FM = (
-    "Expected change frequency",
-    "Need for continuous delivery",
-    "Stakeholder availability",
-    "Testing and documentation formality",
-)
-BU, FV, FC = "Budget and schedule pressure", "Need for formal verification", "Failure consequence"
+S, R, SEC, CX, SZ, _LEGACY, CH, CD, SH, FM, BU, FV, FC = FACTORS  # short names for the weight table
 # (base, weights). Dict order is the fixed tie-break order.
 MODELS = {
     # NASA SE Handbook + NIST 800-64: sequential phases suit stable, document-heavy work.
@@ -258,21 +245,8 @@ def factor_confidence(factors: dict[str, dict], conf: dict[str, int]) -> tuple[d
     return per, round(total / n) if n else 0
 
 
-GPU_CAMPUS = {
-    S: "Medium",
-    R: "High",
-    SEC: "High",
-    CX: "High",
-    SZ: "High",
-    "Legacy-system dependence": "Low",
-    CH: "High",
-    CD: "Medium",
-    SH: "Medium",
-    FM: "High",
-    BU: "Medium",
-    FV: "Medium",
-    FC: "High",
-}
+# PRD worked example (GPU campus): Low on legacy, Medium on 5 factors, High on the rest.
+GPU_CAMPUS = dict.fromkeys(FACTORS, "High") | {_LEGACY: "Low"} | dict.fromkeys([S, CD, SH, BU, FV], "Medium")
 
 if __name__ == "__main__":  # self-check: uv run python backend/rules.py
     got = [(r["model"], r["score"]) for r in rank(GPU_CAMPUS)]

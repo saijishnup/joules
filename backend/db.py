@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta
 
 import config
 
-# 7 tables (PRD Â§14). JSON columns hold lists/dicts; ON DELETE CASCADE makes project delete a hard delete.
+# 7 tables (PRD Ã‚Â§14). JSON columns hold lists/dicts; ON DELETE CASCADE makes project delete a hard delete.
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT,
   pw_hash TEXT NOT NULL, salt TEXT NOT NULL, created_at TEXT);
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,
 CREATE TABLE IF NOT EXISTS projects(id INTEGER PRIMARY KEY,
   owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, name TEXT, role TEXT, area TEXT,
   brief_masked TEXT DEFAULT '', uploads TEXT DEFAULT '[]', answers TEXT DEFAULT '{}', stage INTEGER DEFAULT 0,
-  factors TEXT DEFAULT '{}', ranking TEXT DEFAULT '[]', workflow TEXT DEFAULT '[]', artefacts TEXT DEFAULT '{}',
+  factors TEXT DEFAULT '{}', ranking TEXT DEFAULT '[]', workflow TEXT DEFAULT '{}', artefacts TEXT DEFAULT '{}',
   baseline_version INTEGER DEFAULT 0, created_at TEXT, updated_at TEXT);
 CREATE TABLE IF NOT EXISTS requirements(id INTEGER PRIMARY KEY,
   project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE, rid TEXT, version INTEGER DEFAULT 1,
