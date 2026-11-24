@@ -9,6 +9,7 @@ from contextlib import closing
 from datetime import UTC, datetime, timedelta
 
 import config
+import rules
 
 # 7 tables (PRD Ã‚Â§14). JSON columns hold lists/dicts; ON DELETE CASCADE makes project delete a hard delete.
 SCHEMA = """
@@ -82,9 +83,30 @@ def hash_pw(password: str, salt: str) -> str:
     return hashlib.scrypt(password.encode(), salt=bytes.fromhex(salt), n=2**14, r=8, p=1).hex()
 
 
+def seed_templates(user_id: int) -> None:
+    """Four example projects (brief written, not yet run) so every account has something to open. Skips names it has."""
+    have = {r["name"] for r in q("SELECT name FROM projects WHERE owner_id=?", user_id)}
+    for t in json.loads((config.FIXTURES / "templates.json").read_text(encoding="utf-8")):
+        if t["name"] in have:
+            continue
+        brief, n = rules.mask(t["brief"])
+        run(
+            "INSERT INTO projects(owner_id, name, role, area, brief_masked, artefacts, created_at, updated_at) "
+            "VALUES (?,?,?,?,?,?,?,?)",
+            user_id,
+            t["name"],
+            t["role"],
+            t["area"],
+            brief,
+            {"masked": n},
+            now(),
+            now(),
+        )
+
+
 def add_user(email: str, name: str, password: str) -> int:
     salt = secrets.token_hex(16)
-    return run(
+    uid = run(
         "INSERT INTO users(email, name, pw_hash, salt, created_at) VALUES (?,?,?,?,?)",
         email.lower(),
         name,
@@ -92,6 +114,8 @@ def add_user(email: str, name: str, password: str) -> int:
         salt,
         now(),
     )
+    seed_templates(uid)
+    return uid
 
 
 def check_login(email: str, password: str) -> dict | None:
@@ -118,9 +142,12 @@ def session_user(token: str | None) -> dict | None:
 
 
 def init() -> None:
-    """Create tables and the demo user (M2) if a demo password is set in .env."""
+    """Create tables, the demo user (M2) if a demo password is set in .env, and its template projects."""
     config.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with closing(_connect()) as c:
         c.executescript(SCHEMA)
-    if config.DEMO_PASSWORD and not one("SELECT id FROM users WHERE email=?", config.DEMO_EMAIL):
+    demo = one("SELECT id FROM users WHERE email=?", config.DEMO_EMAIL)
+    if config.DEMO_PASSWORD and not demo:
         add_user(config.DEMO_EMAIL, "Demo user", config.DEMO_PASSWORD)
+    elif demo:
+        seed_templates(demo["id"])  # demo user made before templates existed

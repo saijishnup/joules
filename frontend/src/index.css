@@ -382,7 +382,7 @@ textarea.in {
 .ws {
   height: 100%;
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr) 300px;
+  grid-template-columns: 232px minmax(0, 1fr) 340px;
   transition: grid-template-columns 0.45s var(--spring);
 }
 .ws.mini {
@@ -1744,3 +1744,13 @@ svg.lucide {
   width: 100%;
 }
 fieldset.seg{margin:0;min-inline-size:0}
+/* trace table in the drawer: fixed columns, one line per row, newest at the bottom */
+.ttab{border:1px solid var(--line);border-radius:var(--r1);overflow:hidden}
+.ttab table{table-layout:fixed;font:400 10px/1.4 "Geist Mono",monospace}
+.ttab th,.ttab td{font-weight:400;padding:5px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttab th{font-size:10px;background:var(--surf)}
+.ttab th:nth-child(1){width:66px}.ttab th:nth-child(2){width:66px}.ttab th:nth-child(4){width:40px}.ttab th:nth-child(5){width:34px}
+.ttab td:nth-child(4),.ttab td:nth-child(5),.ttab th:nth-child(4),.ttab th:nth-child(5){text-align:right}
+.ttab td:nth-child(3){color:var(--ink)}
+.ttab tr.bad td{color:var(--lo)}
+.ttab tr:last-child td{border-bottom:0}

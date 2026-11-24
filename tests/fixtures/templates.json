@@ -1,0 +1,10 @@
+[
+  {"name": "Hyderabad GPU campus, 40 MW", "role": "Infrastructure architect", "area": "DC & cloud",
+   "brief": "We are building a 40 MW GPU campus near Hyderabad for enterprise tenants. Power comes from the Telangana DISCOM plus a solar PPA. We need to report both location and market Scope 2 for the BRSR Core filing. Tenants may process personal data. Contact: ops-lead@example.in, +91 98480 22719. We must follow CERT-In incident rules."},
+  {"name": "DISCOM smart-meter analytics", "role": "Product owner", "area": "Energy",
+   "brief": "A state distribution company wants an analytics platform over 2 million smart meters: 15-minute interval reads, outage detection, theft alerts and demand-response forecasts for peak hours. Data sits in a government cloud. Consumer names and addresses are personal data under the DPDP Act. The platform must meet CEA AMI functional requirements and RDSS reporting."},
+  {"name": "Scope 2 report for a cloud tenant", "role": "Sustainability lead", "area": "ESG",
+   "brief": "A listed IT services company rents racks in three colocation data centres and needs a Scope 2 emissions report for its BRSR Core disclosure. It buys renewable energy certificates for one site. The report must show location-based and market-based totals, the emission factors used and an assurance-ready audit trail."},
+  {"name": "LLM procurement rules, state agency", "role": "Compliance officer", "area": "AI governance",
+   "brief": "A state agency will buy a large language model service for citizen helpdesks in three languages. It needs procurement rules: risk assessment before purchase, red-teaming for prompt injection, logging, human review of answers on benefits, data residency in India and a process to report AI incidents. Vendors may use third-party foundation models."}
+]

@@ -2,26 +2,30 @@
 import type { Audit, Project } from "../api";
 
 const time = (iso: string) => new Date(iso).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false });
-function line(a: Audit) {
+// One audit row as table cells: step, detail, tokens, ms.
+function cells(a: Audit): [string, string, string, string] {
+  const ms = a.ms ? String(a.ms) : "";
   if (a.kind === "llm") {
     const bad = a.response?.startsWith("error") || a.response?.startsWith("invalid");
-    return (
-      <>
-        {a.agent?.toLowerCase()} · <b>{a.model}</b> · {a.tokens_in} in / {a.tokens_out} out tok · {a.ms} ms
-        {bad ? " · failed, next model" : ""}
-      </>
-    );
+    return [
+      a.agent?.toLowerCase() ?? "llm",
+      `${a.model}${bad ? " · failed" : ""}`,
+      String(a.tokens_in + a.tokens_out),
+      ms,
+    ];
   }
-  if (a.kind === "rules")
-    return (
-      <>rules.validate · {Object.values((a.rules?.flags as Record<string, string[]>) || {}).flat().length} findings</>
-    );
-  if (a.kind === "error") return <b style={{ color: "var(--lo)" }}>error · {a.response?.slice(0, 80)}</b>;
-  return (
-    <>
-      {a.kind.replace("_", " ")} · <b>{String(a.rules?.rid ?? a.rules?.qid ?? a.rules?.name ?? "")}</b>
-    </>
-  );
+  if (a.kind === "rules") {
+    const n = Object.values((a.rules?.flags as Record<string, string[]>) || {}).flat().length;
+    return ["rules", `${n} findings`, "", ""];
+  }
+  if (a.kind === "error") return ["error", a.response?.slice(0, 60) ?? "", "", ""];
+  const what = a.rules?.rid ?? a.rules?.qid ?? a.rules?.name ?? a.rules?.resolution ?? "";
+  const step = a.kind
+    .replace("requirement_", "")
+    .replace("conflict_", "")
+    .replace("regenerate", "regen")
+    .replace("_", " ");
+  return [step, String(what), "", ""];
 }
 
 export default function Drawer({ p, stage, sel }: { p: Project | null; stage: number; sel: string }) {
@@ -76,14 +80,37 @@ export default function Drawer({ p, stage, sel }: { p: Project | null; stage: nu
       )}
       <div>
         <p className="lbl">Trace</p>
-        <div className="trace">
-          {(p?.audit ?? []).slice(-14).map((a) => (
-            <span key={a.id}>
-              {time(a.at)} {line(a)}
-            </span>
-          ))}
-          {!p?.audit.length && <span>No calls yet.</span>}
-        </div>
+        {p?.audit.length ? (
+          <div className="ttab">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Step</th>
+                  <th>Detail</th>
+                  <th title="Tokens in + out">Tok</th>
+                  <th>ms</th>
+                </tr>
+              </thead>
+              <tbody>
+                {p.audit.slice(-16).map((a) => {
+                  const [step, detail, tok, ms] = cells(a);
+                  return (
+                    <tr key={a.id} className={a.kind === "error" ? "bad" : ""}>
+                      <td>{time(a.at)}</td>
+                      <td>{step}</td>
+                      <td title={detail}>{detail}</td>
+                      <td>{tok}</td>
+                      <td>{ms}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="kv">No calls yet.</p>
+        )}
       </div>
       <p className="muted" style={{ fontSize: 12 }}>
         Full prompts, responses and timings are in the audit table. Deleting the project removes them too.

@@ -170,6 +170,7 @@ export function useProject(id: number | null) {
     reload();
     const es = new EventSource(`/api/projects/${id}/events`);
     const on = (e: MessageEvent) => {
+      if (e.data === undefined) return; // the browser's own "error" when the stream drops; EventSource reconnects
       if (e.type === "agent_state") setAgent(JSON.parse(e.data));
       if (e.type === "error") setError(JSON.parse(e.data).message);
       else setError("");

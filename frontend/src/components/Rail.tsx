@@ -7,7 +7,7 @@ export default function Rail({ p, stage }: { p: Project | null; stage: number })
   const [recent, setRecent] = useState<ProjectRow[]>([]);
   useEffect(() => {
     api<ProjectRow[]>("/projects").then(
-      (r) => setRecent(r.slice(0, 3)),
+      (r) => setRecent(r),
       () => {},
     );
   }, []);
@@ -20,7 +20,7 @@ export default function Rail({ p, stage }: { p: Project | null; stage: number })
     <aside className="rail">
       <div className="hide">
         <p className="lbl">Projects</p>
-        {recent.map((x) => (
+        {[...recent.filter((x) => x.id === p?.id), ...recent.filter((x) => x.id !== p?.id)].slice(0, 3).map((x) => (
           <a key={x.id} className={`proj ${x.id === p?.id ? "on" : ""}`} href={`#/p/${x.id}/${x.stage}`}>
             {x.name}
           </a>

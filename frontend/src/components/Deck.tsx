@@ -1,7 +1,8 @@
 // Card deck used by Interview, Requirements and Conflicts: counter, progress dots, ← → buttons and keys.
-// Only the card on top animates (AnimatePresence keyed by card id); the page around it stays still (NFR-09).
+// Cards drop in from above; the old card collapses downward into the deck. Only the card on top animates
+// (AnimatePresence keyed by card id); the page around it stays still (NFR-09).
 import { AnimatePresence, motion } from "motion/react";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect } from "react";
 
 const spring = { type: "spring", stiffness: 380, damping: 22 } as const;
 
@@ -16,11 +17,6 @@ type Props = {
 };
 
 export default function Deck({ n, i, setI, marks, lockNext, cardKey, children }: Props) {
-  const prev = useRef(i);
-  const dir = i >= prev.current ? 1 : -1;
-  useEffect(() => {
-    prev.current = i;
-  }, [i]);
   const go = (d: number) => {
     if (d > 0 && (lockNext || i >= n - 1)) return;
     setI(Math.max(0, Math.min(n - 1, i + d)));
@@ -54,14 +50,14 @@ export default function Deck({ n, i, setI, marks, lockNext, cardKey, children }:
         </button>
       </div>
       <div className="deck" data-tour="deck">
-        <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+        <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={cardKey}
-            custom={dir}
             transition={spring}
-            initial={{ opacity: 0, x: dir * 28, rotate: dir }}
-            animate={{ opacity: 1, x: 0, rotate: 0 }}
-            exit={{ opacity: 0, x: dir * -28 }}
+            initial={{ opacity: 0, y: -28 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: 24, scaleY: 0.85 }}
+            style={{ transformOrigin: "bottom" }}
           >
             {children}
           </motion.div>
