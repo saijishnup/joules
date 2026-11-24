@@ -76,13 +76,14 @@ def test_conflicts_candidates_and_id_check():
     cands = rules.conflict_candidates(reqs)
     pairs = {(c["a"], c["b"]) for c in cands}
     assert ("NFR-DC-001", "NFR-EN-001") in pairs and ("NFR-AI-001", "FR-DC-001") in pairs
-    assert all(c["type"] for c in cands) and len(cands) <= 6
+    assert all(c["type"] for c in cands) and len(cands) <= 8
     notes = [
         {"a": "NFR-DC-001", "b": "NFR-EN-001", "confirmed": True},
         {"a": "NFR-DC-001", "b": "FAKE-1", "confirmed": True},
         {"a": "NFR-DC-001", "b": "NFR-AI-001", "confirmed": False},
     ]
-    assert rules.keep_conflicts(notes, {r["id"] for r in reqs}) == notes[:1]
+    kept = rules.keep_conflicts(notes + [notes[0] | {"a": "NFR-EN-001", "b": "NFR-DC-001"}], {r["id"] for r in reqs})
+    assert kept == [notes[0] | {"type": "Other"}]  # IDs checked, duplicate pair dropped, unknown type -> Other
 
 
 def test_rank_worked_example_and_determinism():

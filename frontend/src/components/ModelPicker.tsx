@@ -4,7 +4,8 @@ import { api } from "../api";
 import { Menu } from "./ui";
 
 type M = { id: string; status: string };
-const ROLE = ["primary", "fallback 1", "fallback 2", "local", "fixtures"];
+const role = (id: string, i: number) =>
+  i === 0 ? "primary" : id === "mock" ? "fixtures" : id.startsWith("ollama/") ? "local" : `fallback ${i}`;
 const dot = (s: string) => `sdot ${s === "rate-limited" ? "rl" : s === "offline" ? "off" : ""}`;
 
 export default function ModelPicker({ model, setModel }: { model: string; setModel: (m: string) => void }) {
@@ -30,7 +31,7 @@ export default function ModelPicker({ model, setModel }: { model: string; setMod
           <button type="button" key={m.id} onClick={() => setModel(m.id)} aria-pressed={m.id === model}>
             <span className={dot(m.status)} />
             {m.id}
-            <small>{m.status === "ok" ? ROLE[i] || "" : m.status}</small>
+            <small>{m.status === "ok" ? role(m.id, i) : m.status}</small>
           </button>
         ))}
         <hr />

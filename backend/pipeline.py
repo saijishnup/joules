@@ -142,6 +142,13 @@ async def analyse_step(pid: int, model: str) -> None:
     reqs = [r.model_dump() | {"stakeholder": p["role"]} for r in d.requirements]
     for r in reqs:
         r["evidence"] = [labels.get(x, x) for x in r["evidence"]]  # unknown labels stay and get dropped by rules
+        # Re-ground: search with the requirement's own statement, so its citation states this obligation.
+        own = await retrieval.search(r["statement"], model=model, project_id=pid, k=2)
+        for leaf in own:
+            if leaf["id"] not in retrieved:
+                leaves.append(leaf | {"label": f"E{len(leaves) + 1}"})
+                retrieved[leaf["id"]] = leaf["tier"]
+        r["evidence"] = [leaf["id"] for leaf in own] or r["evidence"]
     rules.validate(reqs, retrieved)
     issues = d.open_issues + rules.coverage(reqs, [p["area"]])
     hits = rules.injection_hits(p["brief_masked"] + " ".join(lines))

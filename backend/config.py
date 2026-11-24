@@ -21,11 +21,16 @@ GATEWAY_URL = env("GATEWAY_URL", "http://localhost:20128/v1")
 GATEWAY_KEY = env("OMNIROUTE_API_KEY", "")
 OLLAMA_URL = env("OLLAMA_URL", "http://localhost:11434/v1")
 CHAIN = env(
-    "MODEL_CHAIN", "groq/openai/gpt-oss-120b,gemini/gemini-3.1-flash-lite,groq/qwen/qwen3.8-27b,ollama/qwen3.5:4b,mock"
+    "MODEL_CHAIN",
+    "groq/openai/gpt-oss-120b,mistral/voxtral-small-latest,nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b,"
+    "groq/qwen/qwen3.8-27b,gemini/gemini-3.1-flash-lite,ollama/qwen3.5:4b,mock",
 ).split(",")
-JUDGE = env("JUDGE_MODEL", "gemini/gemini-3.8-flash,gemini/gemini-3.1-flash-lite").split(",")
+# Judge has its own chain (never Groq: gpt-oss scored 3/6 as a judge in tests/model_bench.py).
+JUDGE = env(
+    "JUDGE_CHAIN", "mistral/voxtral-small-latest,nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b,gemini/gemini-3.8-flash"
+).split(",")
 DEFAULT_MODEL = env("DEFAULT_MODEL", "mock")  # demo default; pick a live model in the UI
-LLM_TIMEOUT = float(env("LLM_TIMEOUT", "90"))
+LLM_TIMEOUT = float(env("LLM_TIMEOUT", "120"))  # nemotron drafts take ~85 s
 LLM_MAX_TOKENS = int(env("LLM_MAX_TOKENS", "8192"))
 
 # Seeded demo user (M2); no password in env = no demo user.

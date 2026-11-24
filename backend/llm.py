@@ -63,11 +63,13 @@ async def ask(
     project_id: int,
     agent: str,
     evidence_ids=(),
+    chain: list[str] | None = None,
 ) -> BaseModel:
-    """Validated answer from the first model in the chain that works. Every attempt is written to audit."""
+    """Validated answer from the first model in the chain that works. Every attempt is written to audit.
+    `chain` replaces the default fallback list (the eval judge uses its own)."""
     if not allow(f"llm:{project_id}", config.LLM_PER_HOUR, 3600):
         raise RuntimeError("LLM call limit reached (60 per hour). Try again later.")
-    for m in chain_from(model):
+    for m in chain or chain_from(model):
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         for _ in range(2):  # 1 retry with the validation error
             start, tin, tout = time.monotonic(), 0, 0

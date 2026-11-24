@@ -152,23 +152,31 @@ TENSIONS = [  # (category in one requirement, category in another, conflict type
 ]
 
 
-def conflict_candidates(reqs: list[dict], limit: int = 6) -> list[dict]:
-    """Pairs across different areas whose categories sit on opposite sides of a tension, table order first."""
+def conflict_candidates(reqs: list[dict], limit: int = 8) -> list[dict]:
+    """Pairs whose categories sit on opposite sides of a tension: cross-area pairs first, then table order.
+    These are hints for the Analyst, who may also add pairs code cannot see."""
     out = []
     for a, b in combinations(reqs, 2):
-        if a.get("area") == b.get("area"):
-            continue
         ca, cb = set(a.get("categories", [])), set(b.get("categories", []))
         for i, (x, y, kind) in enumerate(TENSIONS):
             if (x in ca and y in cb) or (y in ca and x in cb):
-                out.append((i, {"a": a["id"], "b": b["id"], "type": kind}))
+                out.append(((a.get("area") == b.get("area"), i), {"a": a["id"], "b": b["id"], "type": kind}))
                 break
     return [c for _, c in sorted(out, key=lambda t: t[0])][:limit]  # small Analyst prompt (NFR-02)
 
 
-def keep_conflicts(notes: list[dict], rids: set[str]) -> list[dict]:
-    """Keep only confirmed conflicts whose two IDs exist and differ."""
-    return [n for n in notes if n.get("confirmed") and n["a"] in rids and n["b"] in rids and n["a"] != n["b"]]
+TENSION_TYPES = sorted({t for _, _, t in TENSIONS})
+
+
+def keep_conflicts(notes: list[dict], rids: set[str], limit: int = 5) -> list[dict]:
+    """Keep confirmed conflicts whose two IDs exist and differ, one per pair, type from the table (else "Other")."""
+    out, seen = [], set()
+    for n in notes:
+        pair = frozenset((n.get("a"), n.get("b")))
+        if n.get("confirmed") and n["a"] in rids and n["b"] in rids and n["a"] != n["b"] and pair not in seen:
+            seen.add(pair)
+            out.append(n | {"type": n.get("type") if n.get("type") in TENSION_TYPES else "Other"})
+    return out[:limit]  # a gate with more than 5 open conflicts is noise, not review
 
 
 # ---------- 4. SDLC rank: same factor levels give the same ranking (NFR-01) ----------

@@ -54,8 +54,8 @@ async def judge(pid: int, reqs: list[dict], ev: dict, limit: int = 5) -> tuple[i
         user = agents.data("requirement", r["statement"]) + agents.data(
             "evidence", f"{leaf['ref']}\n{leaf['text'][:1200]}"
         )
-        model = "mock" if MODEL == "mock" else config.JUDGE[0]
-        v = await llm.ask("judge", JUDGE, user, Verdict, model=model, project_id=pid, agent="Judge")
+        chain = ["mock"] if MODEL == "mock" else config.JUDGE
+        v = await llm.ask("judge", JUDGE, user, Verdict, model=chain[0], chain=chain, project_id=pid, agent="Judge")
         ok, n = ok + v.supported, n + 1
     return ok, n
 
@@ -162,7 +162,7 @@ async def main() -> None:
             {
                 "name": "Hallucination rate",
                 "value": f"{1 - sup / max(1, chk):.1%}",
-                "note": f"LLM judge ({config.JUDGE[0]}), {chk} claims",
+                "note": f"LLM judge ({config.JUDGE[0].split('/')[-1]} first), {chk} claims",
             },
             {
                 "name": "Conflict P / R",

@@ -57,6 +57,7 @@ class ConflictNote(BaseModel):
     a: str
     b: str
     confirmed: bool
+    type: str = ""
     explanation: str
     fix: str = ""
 
@@ -117,9 +118,13 @@ Reply with exactly these keys:
 "statement": "...", "acceptance": "...", "user_story": "", "source": "Answer Q2", "source_quote": "...",
 "evidence": ["E3"], "risk": "High", "self_rating": 0.7, "justification": "..."}}],
 "risks": [{{"text": "...", "level": "Medium"}}], "assumptions": ["..."], "open_issues": ["..."]}}. {GUARD}"""
-CONFLICTS = f"""You are the Analyst. Code proposed requirement pairs that may conflict. For each pair decide if they
-really conflict (confirmed true/false), explain in one sentence, and suggest one fix.
-JSON: {{"conflicts": [{{"a", "b", "confirmed", "explanation", "fix"}}]}}. Keep a and b exactly as given. {GUARD}"""
+CONFLICTS = f"""You are the Analyst. Find the real trade-offs between these requirements: pairs where meeting one
+makes the other harder, costlier or riskier (for example spare capacity for resilience against an efficiency target, log
+retention against privacy limits). They do not need to be logically impossible together. Code flagged some candidate
+pairs as hints; judge each hint, and add any other pair that is a real trade-off. Type: one of {", ".join(rules.TENSION_TYPES)}.
+For each pair give confirmed (true/false), type, a one-sentence explanation and one fix. Keep IDs exactly as given.
+JSON: {{"conflicts": [{{"a": "FR-EN-001", "b": "NFR-DC-002", "confirmed": true, "type": "...", "explanation": "...",
+"fix": "..."}}]}}. {GUARD}"""
 REGENERATE = f"""You are the Analyst. Rewrite one requirement using the reviewer's feedback. Same fields as before,
 statement in "shall" form, measurable acceptance, evidence labels from the list only. JSON: one requirement. {GUARD}"""
 PLANNER = f"""You are the Planner. Rate each of these 13 SDLC factors Low, Medium or High for this project, citing
@@ -198,22 +203,17 @@ async def draft(p: dict, answers: str, leaves: list[dict], model: str) -> Draft:
 
 
 async def confirm_conflicts(p: dict, reqs: list[dict], pairs: list[dict], model: str) -> list[dict]:
-    if not pairs:
+    if len(reqs) < 2:
         return []
     by_id = {r["id"]: r["statement"] for r in reqs}
-    lines = [f"{c['a']}: {by_id[c['a']]}\n{c['b']}: {by_id[c['b']]}\nTension: {c['type']}" for c in pairs]
-    out = await llm.ask(
-        "conflicts",
-        CONFLICTS,
-        data("pairs", "\n\n".join(lines)),
-        ConflictNotes,
-        model=model,
-        project_id=p["id"],
-        agent="Analyst",
-    )
-    types = {(c["a"], c["b"]): c["type"] for c in pairs}
-    kept = rules.keep_conflicts([n.model_dump() for n in out.conflicts], set(by_id))
-    return [n | {"type": types.get((n["a"], n["b"]), "Conflict")} for n in kept]
+    listed = "\n".join(f"{r['id']} [{r['area']}; {', '.join(r['categories'])}] {r['statement']}" for r in reqs)
+    hints = "\n".join(f"{c['a']} x {c['b']}: {c['type']}" for c in pairs) or "none"
+    user = data("requirements", listed) + "\n" + data("hints", hints)
+    out = await llm.ask("conflicts", CONFLICTS, user, ConflictNotes, model=model, project_id=p["id"], agent="Analyst")
+    types = {frozenset((c["a"], c["b"])): c["type"] for c in pairs}  # a hint's type wins when the model leaves it out
+    notes = [n.model_dump() for n in out.conflicts]
+    notes = [n | {"type": n["type"] or types.get(frozenset((n["a"], n["b"])), "")} for n in notes]
+    return rules.keep_conflicts(notes, set(by_id))
 
 
 async def regenerate(p: dict, req: dict, feedback: str, leaves: list[dict], model: str) -> dict:
