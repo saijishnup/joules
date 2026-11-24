@@ -21,11 +21,12 @@ GATEWAY_URL = env("GATEWAY_URL", "http://localhost:20128/v1")
 GATEWAY_KEY = env("OMNIROUTE_API_KEY", "")
 OLLAMA_URL = env("OLLAMA_URL", "http://localhost:11434/v1")
 CHAIN = env(
-    "MODEL_CHAIN", "groq/openai/gpt-oss-120b,gemini/gemini-3.1-flash-lite,groq/qwen/qwen3.8-27b,ollama/qwen3:4b,mock"
+    "MODEL_CHAIN", "groq/openai/gpt-oss-120b,gemini/gemini-3.1-flash-lite,groq/qwen/qwen3.8-27b,ollama/qwen3.5:4b,mock"
 ).split(",")
 JUDGE = env("JUDGE_MODEL", "gemini/gemini-3.8-flash,gemini/gemini-3.1-flash-lite").split(",")
 DEFAULT_MODEL = env("DEFAULT_MODEL", "mock")  # demo default; pick a live model in the UI
-LLM_TIMEOUT = float(env("LLM_TIMEOUT", "60"))
+LLM_TIMEOUT = float(env("LLM_TIMEOUT", "90"))
+LLM_MAX_TOKENS = int(env("LLM_MAX_TOKENS", "8192"))
 
 # Seeded demo user (M2); no password in env = no demo user.
 DEMO_EMAIL = env("DEMO_EMAIL", "demo@joules.local")

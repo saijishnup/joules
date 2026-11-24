@@ -3,7 +3,7 @@
 import json
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 import llm
 import rules
@@ -30,7 +30,7 @@ class Requirement(BaseModel):
     categories: list[str]
     priority: Literal["Must", "Should", "Could", "Won't"]
     statement: str
-    acceptance: str
+    acceptance: str = Field(validation_alias=AliasChoices("acceptance", "acceptance_criteria"))
     user_story: str = ""
     source: str = ""
     source_quote: str = ""
@@ -107,12 +107,16 @@ Each question: topic (one word), text, why (one sentence), options (3 plus "Not 
 In round 2 ask only about the listed gaps; return an empty list if there are none.
 JSON: {{"questions": [{{"topic", "text", "why", "options", "recommended"}}]}}. {GUARD}"""
 ANALYST = f"""You are the Analyst. {DOMAIN}
-Draft 6 to 12 requirements from the brief and answers. Each: type FR or NFR, area (Energy | AI governance | DC & cloud | ESG),
-categories (one or more of {", ".join(rules.CATEGORIES)}), priority (Must | Should | Could | Won't), statement in
-"shall" form, acceptance criteria with a number and unit (Given/When/Then), user_story (FR only), source ("Brief" or
-"Answer Qn"), source_quote (exact words), evidence (labels like E3 from the evidence list only), risk (Low | Medium | High),
-self_rating (0 to 1), justification. Also list risks {{text, level}}, assumptions and open issues.
-Do not make legal determinations. JSON keys: requirements, risks, assumptions, open_issues. {GUARD}"""
+Draft 6 to 8 requirements from the brief and answers. Keep every text field to one or two sentences.
+type FR or NFR; area Energy | AI governance | DC & cloud | ESG; categories from {", ".join(rules.CATEGORIES)};
+priority Must | Should | Could | Won't; statement in "shall" form; acceptance = one Given/When/Then with a number and unit;
+user_story for FR only; source "Brief" or "Answer Qn"; source_quote = exact words from it; evidence = labels like E3 from
+the evidence list only; risk Low | Medium | High; self_rating 0 to 1. Do not make legal determinations.
+Reply with exactly these keys:
+{{"requirements": [{{"type": "NFR", "area": "Energy", "categories": ["Availability"], "priority": "Must",
+"statement": "...", "acceptance": "...", "user_story": "", "source": "Answer Q2", "source_quote": "...",
+"evidence": ["E3"], "risk": "High", "self_rating": 0.7, "justification": "..."}}],
+"risks": [{{"text": "...", "level": "Medium"}}], "assumptions": ["..."], "open_issues": ["..."]}}. {GUARD}"""
 CONFLICTS = f"""You are the Analyst. Code proposed requirement pairs that may conflict. For each pair decide if they
 really conflict (confirmed true/false), explain in one sentence, and suggest one fix.
 JSON: {{"conflicts": [{{"a", "b", "confirmed", "explanation", "fix"}}]}}. Keep a and b exactly as given. {GUARD}"""

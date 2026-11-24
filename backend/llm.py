@@ -39,8 +39,15 @@ def chain_from(model: str) -> list[str]:
 
 async def _call(model: str, messages: list[dict]) -> tuple[str, int, int]:
     client, name = _client(model)
+    # Reasoning models (gpt-oss) spend output tokens thinking: cap the thinking, raise the output limit.
+    extra = {"reasoning_effort": "low"} if "gpt-oss" in name else {}
     r = await client.chat.completions.create(
-        model=name, messages=messages, response_format={"type": "json_object"}, timeout=config.LLM_TIMEOUT
+        model=name,
+        messages=messages,
+        response_format={"type": "json_object"},
+        timeout=config.LLM_TIMEOUT,
+        max_tokens=config.LLM_MAX_TOKENS,
+        **extra,
     )
     u = r.usage
     return r.choices[0].message.content or "", u.prompt_tokens if u else 0, u.completion_tokens if u else 0

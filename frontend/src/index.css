@@ -1754,3 +1754,11 @@ fieldset.seg{margin:0;min-inline-size:0}
 .ttab td:nth-child(3){color:var(--ink)}
 .ttab tr.bad td{color:var(--lo)}
 .ttab tr:last-child td{border-bottom:0}
+/* driver.js tour, themed to the tokens */
+.driver-popover.jtour{background:var(--surf);color:var(--ink);border:1px solid var(--line);border-radius:var(--r2);box-shadow:0 20px 50px -20px #000;font-family:Geist,system-ui,sans-serif}
+.driver-popover.jtour .driver-popover-title{font:600 15px Geist;letter-spacing:-.01em}
+.driver-popover.jtour .driver-popover-description{color:var(--mut);font-size:13px}
+.driver-popover.jtour .driver-popover-progress-text{font:400 11px "Geist Mono";color:var(--mut)}
+.driver-popover.jtour button{border-radius:var(--r1);border:1px solid var(--line);background:transparent;color:var(--ink);text-shadow:none;font:500 12px Geist;padding:6px 10px}
+.driver-popover.jtour .driver-popover-next-btn{background:var(--acc);color:var(--on);border-color:transparent}
+.driver-popover.jtour .driver-popover-arrow{border-color:var(--surf)}

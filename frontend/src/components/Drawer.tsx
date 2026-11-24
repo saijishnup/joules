@@ -4,12 +4,12 @@ import type { Audit, Project } from "../api";
 const time = (iso: string) => new Date(iso).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false });
 // One audit row as table cells: step, detail, tokens, ms.
 function cells(a: Audit): [string, string, string, string] {
-  const ms = a.ms ? String(a.ms) : "";
+  const ms = a.ms ? (a.ms / 1000).toFixed(1) : ""; // seconds, one decimal
   if (a.kind === "llm") {
     const bad = a.response?.startsWith("error") || a.response?.startsWith("invalid");
     return [
       a.agent?.toLowerCase() ?? "llm",
-      `${a.model}${bad ? " · failed" : ""}`,
+      `${a.model?.split("/").at(-1)}${bad ? " · failed" : ""}`,
       String(a.tokens_in + a.tokens_out),
       ms,
     ];
@@ -89,7 +89,7 @@ export default function Drawer({ p, stage, sel }: { p: Project | null; stage: nu
                   <th>Step</th>
                   <th>Detail</th>
                   <th title="Tokens in + out">Tok</th>
-                  <th>ms</th>
+                  <th title="Seconds">s</th>
                 </tr>
               </thead>
               <tbody>

@@ -66,12 +66,14 @@ export function Menu({
   up,
   className = "ib",
   label,
+  tour,
 }: {
   button: ReactNode;
   children: ReactNode;
   up?: boolean;
   className?: string;
   label: string;
+  tour?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -87,7 +89,7 @@ export function Menu({
     };
   }, [open]);
   return (
-    <div className="pick" ref={ref}>
+    <div className="pick" ref={ref} data-tour={tour}>
       <button
         type="button"
         className={className}

@@ -4,6 +4,7 @@ import { api, type Project, useProject } from "../api";
 import Drawer from "../components/Drawer";
 import Rail from "../components/Rail";
 import { Locked, Toaster } from "../components/ui";
+import { firstRunTour } from "../help";
 import Approve from "../stages/Approve";
 import Brief from "../stages/Brief";
 import Conflicts from "../stages/Conflicts";
@@ -55,6 +56,10 @@ export default function Workspace({ id, stage, mini }: { id: number | null; stag
     if (stage === 0 && p.stage === 1) location.hash = `#/p/${id}/1`;
     else if (stage === 1 && p.stage >= 3) location.hash = `#/p/${id}/2`;
   }, [p?.stage]);
+
+  useEffect(() => {
+    if (p) firstRunTour();
+  }, [p]);
 
   async function run(body: object = {}) {
     setError("");

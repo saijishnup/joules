@@ -1,0 +1,313 @@
+{
+ "note": "Five seeded case studies (one per area + one cross-area). Gold conflicts are tension types from rules.TENSIONS; expected SDLC models and gold documents are hand-labelled by the author. Retrieval questions are phrased the way a stakeholder would ask, without document names.",
+ "cases": [
+  {
+   "name": "Hyderabad GPU campus, 40 MW",
+   "area": "DC & cloud",
+   "role": "Infrastructure architect",
+   "expected": "Agile-V hybrid",
+   "gold_conflicts": [
+    "Efficiency vs resilience",
+    "Retention vs privacy",
+    "Transparency vs security"
+   ],
+   "brief": "We are building a 40 MW GPU campus near Hyderabad for enterprise tenants. Power comes from the Telangana DISCOM plus a solar PPA. We need to report both location and market Scope 2 for the BRSR Core filing. Tenants may process personal data. We must follow CERT-In incident rules and keep PUE low while riding through grid events."
+  },
+  {
+   "name": "DISCOM smart-meter analytics",
+   "area": "Energy",
+   "role": "Product owner",
+   "expected": "DevSecOps",
+   "gold_conflicts": [
+    "Retention vs privacy",
+    "Openness vs security"
+   ],
+   "brief": "A state distribution company wants an analytics platform over 2 million smart meters: 15-minute interval reads, outage detection, theft alerts and demand-response forecasts. Releases every two weeks. Data sits in a government cloud and integrates with the billing system through open APIs. Consumer names and addresses are personal data under the DPDP Act. The platform must meet CEA AMI functional requirements and RDSS reporting."
+  },
+  {
+   "name": "Scope 2 report for a cloud tenant",
+   "area": "ESG",
+   "role": "Sustainability lead",
+   "expected": "V-Model",
+   "gold_conflicts": [
+    "Retention vs privacy",
+    "Transparency vs security"
+   ],
+   "brief": "A listed IT services company rents racks in three colocation data centres and needs a Scope 2 emissions report for its BRSR Core disclosure, with reasonable assurance. It buys renewable energy certificates for one site. The report must show location-based and market-based totals, the emission factors used and an audit trail that auditors can verify. Requirements are fixed by the regulator for this year."
+  },
+  {
+   "name": "LLM procurement rules, state agency",
+   "area": "AI governance",
+   "role": "Compliance officer",
+   "expected": "Spiral",
+   "gold_conflicts": [
+    "Transparency vs security",
+    "Retention vs privacy",
+    "Openness vs security"
+   ],
+   "brief": "A state agency will buy a large language model service for citizen helpdesks in three languages. It needs procurement rules: risk assessment before purchase, red-teaming for prompt injection, logging, human review of answers on benefits, data residency in India and a process to report AI incidents. Vendors may use third-party foundation models. The risks are new and not well understood."
+  },
+  {
+   "name": "Grid-aware AI training scheduler",
+   "area": "Energy",
+   "role": "Operations manager",
+   "expected": "Agile-V hybrid",
+   "gold_conflicts": [
+    "Efficiency vs resilience",
+    "Speed vs control",
+    "Openness vs security",
+    "Cost vs redundancy"
+   ],
+   "brief": "A cloud provider wants a scheduler that shifts AI training jobs to hours with low grid carbon intensity and responds to grid operator demand-response signals within 15 minutes. It must report the carbon saved for ESG disclosures, keep tenant SLAs, follow grid code limits and log every decision for audit. The scheduling logic will change often as tariffs change."
+  }
+ ],
+ "retrieval": [
+  [
+   "How quickly must we tell the national cyber agency after we notice a hack?",
+   [
+    "CERT-In-Directions-2022"
+   ]
+  ],
+  [
+   "Which yearly efficiency numbers must a large server facility in Europe publish?",
+   [
+    "EU-DelReg-2024-1364",
+    "EU-EED-2023-1791"
+   ]
+  ],
+  [
+   "Should our electricity emissions be counted from the grid mix or from the contracts we buy?",
+   [
+    "GHG-Protocol-Scope2-Guidance"
+   ]
+  ],
+  [
+   "What happens if the grid frequency drifts while our big load is connected?",
+   [
+    "CERC-IEGC-2023"
+   ]
+  ],
+  [
+   "Users could trick our chatbot into ignoring its instructions. What should we guard against?",
+   [
+    "OWASP-LLM-Top10-2025"
+   ]
+  ],
+  [
+   "How should an organisation structure the way it manages risks from its machine learning systems?",
+   [
+    "NIST-AI-RMF-1.0"
+   ]
+  ],
+  [
+   "Generative models sometimes make up facts. Which risks of such models should we plan for?",
+   [
+    "NIST-AI-600-1"
+   ]
+  ],
+  [
+   "Attackers could tamper with training data or craft inputs to fool our model. How are these attacks classified?",
+   [
+    "NIST-AI-100-2e2025"
+   ]
+  ],
+  [
+   "Who must we notify, and how fast, when customer personal data leaks?",
+   [
+    "DPDP-Rules-2025-gazette",
+    "DPDP-Act-2023"
+   ]
+  ],
+  [
+   "Can a third party manage user permissions for sharing their personal data?",
+   [
+    "DPDP-Act-2023",
+    "DPDP-Rules-2025-gazette"
+   ]
+  ],
+  [
+   "When must we assess privacy risks before starting risky processing of EU residents' data?",
+   [
+    "GDPR"
+   ]
+  ],
+  [
+   "What must the head-end and meter data system of a smart metering rollout support?",
+   [
+    "CEA-AMI-Functional-Requirements-2016"
+   ]
+  ],
+  [
+   "Which funding scheme supports utilities to install prepaid meters?",
+   [
+    "RDSS-Guidelines-Sep2023"
+   ]
+  ],
+  [
+   "How much power will server farms use because of artificial intelligence?",
+   [
+    "IEA-Energy-and-AI"
+   ]
+  ],
+  [
+   "How can customers cut their use at peak hours to help the grid?",
+   [
+    "IEA-demand-response",
+    "IEA-Electricity-2026"
+   ]
+  ],
+  [
+   "Which sustainability figures must top listed companies get assured?",
+   [
+    "SEBI-BRSR-Core-Jul2023"
+   ]
+  ],
+  [
+   "How do we count emissions from purchased goods, transport and other suppliers?",
+   [
+    "GHG-Scope3-Guidance"
+   ]
+  ],
+  [
+   "Which facilities should be inside our emissions inventory boundary?",
+   [
+    "GHG-Protocol-Corporate-Standard"
+   ]
+  ],
+  [
+   "What must a company disclose about climate risks to investors?",
+   [
+    "IFRS-S2-READ-ONLY-DO-NOT-COMMIT"
+   ]
+  ],
+  [
+   "What practices make software development secure from the start?",
+   [
+    "NIST-SSDF-800-218"
+   ]
+  ],
+  [
+   "Where should security activities sit in each phase of building an information system?",
+   [
+    "NIST-800-64r2"
+   ]
+  ],
+  [
+   "How do teams inspect the increment and adapt at the end of each iteration?",
+   [
+    "Scrum-Guide"
+   ]
+  ],
+  [
+   "How are designs reviewed and checked against needs before launch in large engineering programmes?",
+   [
+    "NASA-SE-Handbook"
+   ]
+  ],
+  [
+   "Which controls limit who can log in and what they can access?",
+   [
+    "NIST-800-53r5"
+   ]
+  ],
+  [
+   "What are the top-level functions an organisation uses to manage cyber risk?",
+   [
+    "NIST-CSF-2.0"
+   ]
+  ],
+  [
+   "Which security duties stay with the customer and which move to the cloud vendor?",
+   [
+    "CSA-Security-Guidance-v5"
+   ]
+  ],
+  [
+   "What must sellers of AI used in critical areas do before putting it on the market?",
+   [
+    "EU-AI-Act"
+   ]
+  ],
+  [
+   "How should developers build, deploy and run AI systems securely?",
+   [
+    "NCSC-secure-AI"
+   ]
+  ],
+  [
+   "What efficiency rules apply to air-conditioning plants in new commercial buildings in India?",
+   [
+    "BEE-ECSBC-2024"
+   ]
+  ],
+  [
+   "How can Indian server rooms improve cooling and airflow?",
+   [
+    "BEE-CII-Datacenter-Guidelines",
+    "CII-LBNL-India-DC-PhaseII-2016"
+   ]
+  ],
+  [
+   "What incentives does the government plan for building server parks in India?",
+   [
+    "MeitY-Data-Centre-Policy-2020-Draft"
+   ]
+  ],
+  [
+   "What guards, cameras and access systems should a government server facility have?",
+   [
+    "State-Data-Centre-Physical-Security-Annexure"
+   ]
+  ],
+  [
+   "How do we keep electricity networks secure as they change?",
+   [
+    "IEA-Electricity-Grids-Secure-Transitions"
+   ]
+  ],
+  [
+   "How fast will world power demand grow over the next two years?",
+   [
+    "IEA-Electricity-2026"
+   ]
+  ],
+  [
+   "How can operators save energy in servers and storage?",
+   [
+    "DOE-data-centers"
+   ]
+  ],
+  [
+   "What is the typical efficiency ratio of server facilities in India?",
+   [
+    "CII-LBNL-India-DC-PhaseII-2016"
+   ]
+  ],
+  [
+   "How can an organisation manage privacy risk across its activities?",
+   [
+    "NIST-Privacy-Framework"
+   ]
+  ],
+  [
+   "What principles has India proposed for governing artificial intelligence?",
+   [
+    "India-AI-Governance-explainer"
+   ]
+  ],
+  [
+   "How can citizens share their data with consent through a digital framework?",
+   [
+    "MeitY-DEPA-Draft"
+   ]
+  ],
+  [
+   "Which cloud controls cover the security of applications and their interfaces?",
+   [
+    "CSA-CCM-v4.1.1",
+    "CSA-CCM-v4.1-Implementation-Guidelines",
+    "CSA-CAIQ-v4.1.0"
+   ]
+  ]
+ ]
+}

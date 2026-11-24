@@ -1,6 +1,7 @@
 // Top bar: compress toggle, wordmark, tagline, nav, help menu, theme toggle, account menu (PRD §17).
 import { FileText, Info, Moon, PanelLeft, Shield, Sun, Zap } from "lucide-react";
 import type { User } from "../App";
+import { setTourOn, startTour, tourOn } from "../help";
 import { Menu, Wordmark } from "./ui";
 
 type Props = {
@@ -40,10 +41,15 @@ export default function Topbar({ page, user, theme, onTheme, onMini, onOut }: Pr
         </nav>
       )}
       <div className="tright">
-        <Menu label="Help" button={<Info />}>
-          <button type="button" data-tour="help" onClick={() => window.dispatchEvent(new Event("joules-tour"))}>
+        <Menu label="Help" button={<Info />} tour="help">
+          <button type="button" onClick={startTour}>
             <Zap />
             Replay tour
+          </button>
+          <button type="button" onClick={() => setTourOn(!tourOn())}>
+            <Info />
+            Tour on first visit
+            <small>{tourOn() ? "on" : "off"}</small>
           </button>
           <hr />
           <a href="#/terms">
