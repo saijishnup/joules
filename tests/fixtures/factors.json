@@ -1,0 +1,17 @@
+{
+  "factors": {
+    "Requirement stability": {"level": "Medium", "cites": ["NFR-DC-001", "FR-EN-001"], "why": "Power and cooling targets are fixed; scheduling rules may change."},
+    "Regulatory criticality": {"level": "High", "cites": ["FR-DC-001", "FR-ESG-001", "FR-AI-001"], "why": "CERT-In, BRSR Core and AI risk rules all apply."},
+    "Security risk": {"level": "High", "cites": ["FR-DC-001", "NFR-AI-001"], "why": "Multi-tenant GPU cloud with personal data in prompts."},
+    "Project complexity": {"level": "High", "cites": ["NFR-EN-001", "NFR-DC-001"], "why": "Grid, cooling and tenant software interact."},
+    "System size": {"level": "High", "cites": ["NFR-DC-001"], "why": "40 MW campus with several GPU halls."},
+    "Legacy-system dependence": {"level": "Low", "cites": [], "why": "Greenfield campus."},
+    "Expected change frequency": {"level": "High", "cites": ["FR-EN-001", "FR-AI-001"], "why": "Demand-response and AI rules are still evolving."},
+    "Need for continuous delivery": {"level": "Medium", "cites": ["FR-EN-001"], "why": "Scheduler and portal ship often; plant changes rarely."},
+    "Stakeholder availability": {"level": "Medium", "cites": [], "why": "Tenants join after launch."},
+    "Testing and documentation formality": {"level": "High", "cites": ["FR-DC-001", "NFR-DC-001"], "why": "Audits need test reports and metered evidence."},
+    "Budget and schedule pressure": {"level": "Medium", "cites": [], "why": "Phased build over 2 years."},
+    "Need for formal verification": {"level": "Medium", "cites": ["NFR-EN-001"], "why": "Ride-through must be tested, not proven formally."},
+    "Failure consequence": {"level": "High", "cites": ["NFR-EN-001", "FR-DC-001"], "why": "Outages hit many tenants and the grid."}
+  }
+}

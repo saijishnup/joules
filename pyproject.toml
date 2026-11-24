@@ -1,0 +1,31 @@
+[project]
+name = "joules"
+version = "0.1.0"
+description = "An Agentic SDLC Ranker for Sustainable AI Infrastructure"
+license = "AGPL-3.0-only"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.5.9",
+    "fastapi>=0.165.0",
+    "openai>=3.58.0",
+    "pydantic>=2.14.4",
+    "pymupdf>=2.1",
+    "python-dotenv>=1.2.4",
+    "rank-bm25>=0.2.2",
+    "uvicorn>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.6",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+src = ["backend", "tests"]

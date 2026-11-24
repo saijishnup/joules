@@ -1,0 +1,10 @@
+{
+  "conflicts": [
+    {"a": "NFR-DC-001", "b": "NFR-EN-001", "confirmed": true, "explanation": "Holding PUE at 1.40 pushes toward fewer UPS and chiller units, while grid ride-through needs spare power and cooling headroom.", "fix": "Keep PUE 1.40 as an annual average and exclude declared grid events from the PUE window."},
+    {"a": "NFR-EN-001", "b": "NFR-DC-002", "confirmed": false, "explanation": "Ride-through and water metering do not compete for the same resource.", "fix": ""},
+    {"a": "NFR-DC-001", "b": "NFR-AI-001", "confirmed": false, "explanation": "PUE reports hold no personal data.", "fix": ""},
+    {"a": "FR-ESG-001", "b": "NFR-AI-001", "confirmed": false, "explanation": "Emission records hold no personal data.", "fix": ""},
+    {"a": "NFR-AI-001", "b": "FR-DC-001", "confirmed": true, "explanation": "Logs kept 180 days may hold unmasked personal data from prompts, against DPDP purpose limits.", "fix": "Store masked prompts only in incident logs; keep raw text out of the log store."},
+    {"a": "NFR-AI-001", "b": "NFR-DC-002", "confirmed": false, "explanation": "Water data holds no personal data.", "fix": ""}
+  ]
+}

@@ -1,29 +1,38 @@
+"""Settings, model chain and input caps, read once from .env."""
+
 import os
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 ROOT = Path(__file__).resolve().parent.parent
-VAR = ROOT / "var"
-VAR.mkdir(exist_ok=True)
+load_dotenv(ROOT / ".env")
+env = os.getenv
 
-KB_DIR = ROOT / "kb"
-DB_PATH = Path(os.getenv("DB_PATH", VAR / "atlas.db"))
-CHROMA_DIR = Path(os.getenv("CHROMA_DIR", VAR / "chroma"))
+DATA = ROOT / "data"
+DB_PATH = Path(env("JOULES_DB", str(DATA / "joules.db")))
+FIXTURES = ROOT / "tests" / "fixtures"
+SOURCES_RAW = ROOT / "sources-raw"
+MANIFEST = ROOT / "sources" / "manifest.csv"
+PUBLIC_ONLY = env("PUBLIC_ONLY", "1") == "1"  # deploys use only redistributable sources
 
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "")
-LLM_API_KEY = os.getenv("LLM_API_KEY", "")
-LLM_MODEL = os.getenv("LLM_MODEL", "")
-LLM_MODE = os.getenv("LLM_MODE", "hosted")
-LLM_JSON_MODE = os.getenv("LLM_JSON_MODE", "on").strip().lower() != "off"  # off for gateways whose upstreams reject response_format
-LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT", "300" if LLM_MODE == "local" else "60"))
-LLM_PROVIDER_LABEL = os.getenv("LLM_PROVIDER_LABEL", "")  # shown in the UI badge, e.g. omniroute
+# LLM: one OpenAI-compatible gateway (omniroute) + local Ollama; "mock" serves tests/fixtures.
+GATEWAY_URL = env("GATEWAY_URL", "http://localhost:20128/v1")
+GATEWAY_KEY = env("OMNIROUTE_API_KEY", "")
+OLLAMA_URL = env("OLLAMA_URL", "http://localhost:11434/v1")
+CHAIN = env(
+    "MODEL_CHAIN", "groq/openai/gpt-oss-120b,gemini/gemini-3.1-flash-lite,groq/qwen/qwen3.8-27b,ollama/qwen3:4b,mock"
+).split(",")
+JUDGE = env("JUDGE_MODEL", "gemini/gemini-3.8-flash,gemini/gemini-3.1-flash-lite").split(",")
+DEFAULT_MODEL = env("DEFAULT_MODEL", "mock")  # demo default; pick a live model in the UI
+LLM_TIMEOUT = float(env("LLM_TIMEOUT", "60"))
 
-CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
-RATE_LIMIT_PER_MIN = int(os.getenv("RATE_LIMIT_PER_MIN", "30"))
-DAILY_LLM_CAP = int(os.getenv("DAILY_LLM_CAP", "0"))
-TRUST_PROXY_HOPS = int(os.getenv("TRUST_PROXY_HOPS", "0"))
-CONCURRENCY = os.getenv("CONCURRENCY", "threads")
-WORKERS = int(os.getenv("WORKERS", "4"))
+# Seeded demo user (M2); no password in env = no demo user.
+DEMO_EMAIL = env("DEMO_EMAIL", "demo@joules.local")
+DEMO_PASSWORD = env("DEMO_PASSWORD", "")
+SESSION_DAYS = 7
+
+# Input caps (PRD §16) and in-memory rate limits (NFR-03).
+BRIEF_WORDS, UPLOAD_WORDS, ANSWER_WORDS, FEEDBACK_WORDS, EDIT_WORDS = 1500, 8000, 100, 100, 60
+UPLOAD_BYTES, MAX_UPLOADS, NAME_CHARS = 5 * 1024 * 1024, 2, 80
+LOGIN_PER_MIN, RUNS_PER_HOUR, LLM_PER_HOUR = 5, 10, 60

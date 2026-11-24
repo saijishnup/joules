@@ -1,0 +1,7 @@
+{
+  "questions": [
+    {"id": "Q5", "topic": "incidents", "text": "Who reports cyber incidents to CERT-In for tenant workloads?", "why": "The 6-hour reporting clock needs one owner.", "options": ["The campus operator", "Each tenant for its own workloads", "Both, with a shared runbook", "Not sure"], "recommended": 2},
+    {"id": "Q6", "topic": "ai-use", "text": "Will the operator itself run AI models on tenant or operations data?", "why": "Decides whether AI risk management and model-security requirements apply.", "options": ["Yes, for operations (cooling, scheduling)", "Yes, offered to tenants as a service", "No AI use by the operator", "Not sure"], "recommended": 0},
+    {"id": "Q7", "topic": "grid", "text": "Can the campus shift GPU load when the grid operator asks?", "why": "Sets demand-response and scheduling requirements.", "options": ["Yes, up to 20% of load within 15 minutes", "Only for batch training jobs", "No, load is fixed", "Not sure"], "recommended": 1}
+  ]
+}

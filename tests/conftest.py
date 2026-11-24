@@ -1,9 +1,7 @@
-import pytest
+"""Point every test at a throwaway SQLite file before backend modules load."""
 
-from backend import config
+import os
+import tempfile
 
-
-@pytest.fixture(autouse=True)
-def tmp_db(tmp_path, monkeypatch):
-    monkeypatch.setattr(config, "DB_PATH", tmp_path / "t.db")
-    monkeypatch.setattr(config, "RATE_LIMIT_PER_MIN", 0)
+os.environ["JOULES_DB"] = os.path.join(tempfile.mkdtemp(), "test.db")
+os.environ["DEMO_PASSWORD"] = "demo-pass-for-tests"

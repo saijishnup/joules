@@ -1,217 +1,126 @@
+"""SQLite schema, small query helpers, password hashing and the seeded demo user (stdlib only)."""
+
+import hashlib
+import hmac
 import json
+import secrets
 import sqlite3
-import time
-import uuid
-from contextlib import contextmanager
+from contextlib import closing
+from datetime import UTC, datetime, timedelta
 
-from backend import config
+import config
 
+# 7 tables (PRD Â§14). JSON columns hold lists/dicts; ON DELETE CASCADE makes project delete a hard delete.
 SCHEMA = """
-PRAGMA foreign_keys = ON;
-CREATE TABLE IF NOT EXISTS projects (
-  id TEXT PRIMARY KEY, name TEXT NOT NULL, project_type TEXT NOT NULL,
-  description TEXT NOT NULL, traits_json TEXT NOT NULL, status TEXT NOT NULL,
-  llm_provider TEXT, kb_version TEXT, created_at TEXT, updated_at TEXT);
-CREATE TABLE IF NOT EXISTS questions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  round INTEGER NOT NULL, text TEXT NOT NULL, why TEXT, topic TEXT NOT NULL,
-  answer TEXT, skipped INTEGER NOT NULL DEFAULT 0);
-CREATE TABLE IF NOT EXISTS requirements (
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  seq INTEGER NOT NULL, statement TEXT NOT NULL, original_statement TEXT,
-  categories_json TEXT NOT NULL, priority TEXT NOT NULL, acceptance_criteria TEXT,
-  citations_json TEXT NOT NULL DEFAULT '[]', confidence REAL NOT NULL DEFAULT 0,
-  status TEXT NOT NULL DEFAULT 'proposed', source_quote TEXT,
-  quality_flags_json TEXT NOT NULL DEFAULT '[]',
-  PRIMARY KEY (project_id, seq));
-CREATE TABLE IF NOT EXISTS sdlc_runs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  factors_json TEXT NOT NULL, ranking_json TEXT NOT NULL, rationale_json TEXT NOT NULL,
-  stale INTEGER NOT NULL DEFAULT 0, created_at TEXT);
+CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT,
+  pw_hash TEXT NOT NULL, salt TEXT NOT NULL, created_at TEXT);
+CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at TEXT);
+CREATE TABLE IF NOT EXISTS projects(id INTEGER PRIMARY KEY,
+  owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, name TEXT, role TEXT, area TEXT,
+  brief_masked TEXT DEFAULT '', uploads TEXT DEFAULT '[]', answers TEXT DEFAULT '{}', stage INTEGER DEFAULT 0,
+  factors TEXT DEFAULT '{}', ranking TEXT DEFAULT '[]', workflow TEXT DEFAULT '[]', artefacts TEXT DEFAULT '{}',
+  baseline_version INTEGER DEFAULT 0, created_at TEXT, updated_at TEXT);
+CREATE TABLE IF NOT EXISTS requirements(id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE, rid TEXT, version INTEGER DEFAULT 1,
+  data TEXT, status TEXT DEFAULT 'open', confidence INTEGER, UNIQUE(project_id, rid));
+CREATE TABLE IF NOT EXISTS conflicts(id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE, a_rid TEXT, b_rid TEXT, type TEXT,
+  explanation TEXT, fix TEXT, resolution TEXT, note TEXT);
+CREATE TABLE IF NOT EXISTS approvals(id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE, gate INTEGER, version INTEGER,
+  name TEXT, role TEXT, comment TEXT, at TEXT);
+CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE, at TEXT, kind TEXT, agent TEXT,
+  model TEXT, prompt TEXT, response TEXT, evidence_ids TEXT DEFAULT '[]', rules TEXT DEFAULT '{}',
+  tokens_in INTEGER DEFAULT 0, tokens_out INTEGER DEFAULT 0, ms INTEGER DEFAULT 0);
 """
-
-_REQ_FIELDS = {"statement", "original_statement", "priority", "acceptance_criteria",
-               "confidence", "status", "source_quote"}
-_REQ_JSON = {"categories", "citations", "quality_flags"}
+JSON_COLS = {"uploads", "answers", "factors", "ranking", "workflow", "artefacts", "data", "evidence_ids", "rules"}
 
 
-@contextmanager
-def conn():
-    c = sqlite3.connect(config.DB_PATH)
+def now() -> str:
+    """UTC ISO time; the UI shows it in IST (NFR-07)."""
+    return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+def _connect() -> sqlite3.Connection:
+    # ponytail: new connection per call; fine for one uvicorn worker, pool if it ever scales out.
+    c = sqlite3.connect(config.DB_PATH, isolation_level=None)
     c.row_factory = sqlite3.Row
-    c.executescript(SCHEMA)
-    try:
-        yield c
-        c.commit()
-    except Exception:
-        c.rollback()
-        raise
-    finally:
-        c.close()
+    c.execute("PRAGMA foreign_keys=ON")
+    return c
 
 
-def _now():
-    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+def _args(args: tuple) -> list:
+    return [json.dumps(a) if isinstance(a, (dict, list)) else a for a in args]
 
 
-# --- projects ---
-def create_project(intake, provider):
-    pid, now = uuid.uuid4().hex[:12], _now()
-    with conn() as c:
-        c.execute(
-            "INSERT INTO projects VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (pid, intake.name, intake.project_type, intake.description,
-             json.dumps(intake.traits), "intake", provider, None, now, now),
-        )
-    return pid
+def q(sql: str, *args) -> list[dict]:
+    """Run a SELECT; rows come back as dicts with JSON columns decoded."""
+    with closing(_connect()) as c:
+        rows = c.execute(sql, _args(args)).fetchall()
+    return [{k: json.loads(v) if k in JSON_COLS and v else v for k, v in dict(r).items()} for r in rows]
 
 
-def get_project(pid):
-    with conn() as c:
-        r = c.execute("SELECT * FROM projects WHERE id=?", (pid,)).fetchone()
-    if not r:
-        return None
-    d = dict(r)
-    d["traits"] = json.loads(d.pop("traits_json"))
-    return d
+def one(sql: str, *args) -> dict | None:
+    rows = q(sql, *args)
+    return rows[0] if rows else None
 
 
-def delete_project(pid):
-    with conn() as c:  # questions, requirements, sdlc_runs go too (ON DELETE CASCADE)
-        return c.execute("DELETE FROM projects WHERE id=?", (pid,)).rowcount > 0
+def run(sql: str, *args) -> int:
+    """Run a write; returns the new row id."""
+    with closing(_connect()) as c:
+        return c.execute(sql, _args(args)).lastrowid
 
 
-def list_projects():
-    with conn() as c:
-        rows = c.execute(
-            "SELECT id, name, project_type, status, updated_at FROM projects ORDER BY updated_at DESC"
-        ).fetchall()
-    return [dict(r) for r in rows]
+def update(table: str, row_id: int, **cols) -> None:
+    """UPDATE one row by id. Column names come from code, never from the user."""
+    run(f"UPDATE {table} SET {', '.join(f'{k}=?' for k in cols)} WHERE id=?", *cols.values(), row_id)
 
 
-def set_status(pid, status, kb_version=None):
-    with conn() as c:
-        c.execute(
-            "UPDATE projects SET status=?, kb_version=COALESCE(?, kb_version), updated_at=? WHERE id=?",
-            (status, kb_version, _now(), pid),
-        )
+def hash_pw(password: str, salt: str) -> str:
+    return hashlib.scrypt(password.encode(), salt=bytes.fromhex(salt), n=2**14, r=8, p=1).hex()
 
 
-# --- questions ---
-def add_questions(pid, rnd, qs):
-    with conn() as c:
-        c.executemany(
-            "INSERT INTO questions (project_id, round, text, why, topic) VALUES (?,?,?,?,?)",
-            [(pid, rnd, q.text, q.why, q.topic) for q in qs],
-        )
-
-
-def get_questions(pid):
-    with conn() as c:
-        rows = c.execute("SELECT * FROM questions WHERE project_id=? ORDER BY id", (pid,)).fetchall()
-    return [{**dict(r), "skipped": bool(r["skipped"])} for r in rows]
-
-
-def save_answers(pid, answers):  # [{id, answer, skipped}]
-    with conn() as c:
-        c.executemany(
-            "UPDATE questions SET answer=?, skipped=? WHERE id=? AND project_id=?",
-            [(a["answer"], int(a["skipped"]), a["id"], pid) for a in answers],
-        )
-
-
-# --- requirements ---
-def _req(r):
-    d = dict(r)
-    for k in _REQ_JSON:
-        d[k] = json.loads(d.pop(f"{k}_json"))
-    return d
-
-
-def _insert_reqs(c, pid, reqs):
-    c.executemany(
-        "INSERT INTO requirements (project_id, seq, statement, original_statement, categories_json,"
-        " priority, acceptance_criteria, citations_json, confidence, status, source_quote,"
-        " quality_flags_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-        [(pid, r["seq"], r["statement"], r["original_statement"], json.dumps(r["categories"]),
-          r["priority"], r["acceptance_criteria"], json.dumps(r["citations"]), r["confidence"],
-          r["status"], r["source_quote"], json.dumps(r["quality_flags"])) for r in reqs],
+def add_user(email: str, name: str, password: str) -> int:
+    salt = secrets.token_hex(16)
+    return run(
+        "INSERT INTO users(email, name, pw_hash, salt, created_at) VALUES (?,?,?,?,?)",
+        email.lower(),
+        name,
+        hash_pw(password, salt),
+        salt,
+        now(),
     )
 
 
-def replace_requirements(pid, reqs):
-    with conn() as c:
-        c.execute("DELETE FROM requirements WHERE project_id=?", (pid,))
-        _insert_reqs(c, pid, reqs)
+def check_login(email: str, password: str) -> dict | None:
+    u = one("SELECT * FROM users WHERE email=?", email.lower())
+    return u if u and hmac.compare_digest(u["pw_hash"], hash_pw(password, u["salt"])) else None
 
 
-def import_project(p, provider, kb_version, questions, reqs, sdlc):
-    """One transaction: a half-imported project is never left behind. Always a new id."""
-    pid, now = uuid.uuid4().hex[:12], _now()
-    with conn() as c:
-        c.execute(
-            "INSERT INTO projects VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (pid, p["name"], p["project_type"], p["description"], json.dumps(p["traits"]),
-             p["status"], provider, kb_version, p["created_at"] or now, now),
-        )
-        c.executemany(
-            "INSERT INTO questions (project_id, round, text, why, topic, answer, skipped) VALUES (?,?,?,?,?,?,?)",
-            [(pid, q["round"], q["text"], q["why"], q["topic"], q["answer"], int(q["skipped"])) for q in questions],
-        )
-        _insert_reqs(c, pid, reqs)
-        if sdlc:
-            c.execute(
-                "INSERT INTO sdlc_runs (project_id, factors_json, ranking_json, rationale_json, stale, created_at)"
-                " VALUES (?,?,?,?,?,?)",
-                (pid, json.dumps(sdlc["factors"]), json.dumps(sdlc["ranking"]),
-                 json.dumps(sdlc["rationale"]), int(sdlc["stale"]), now),
-            )
-    return pid
+def new_session(user_id: int) -> str:
+    token = secrets.token_urlsafe(32)
+    expires = (datetime.now(UTC) + timedelta(days=config.SESSION_DAYS)).isoformat(timespec="seconds")
+    run("INSERT INTO sessions VALUES (?,?,?)", token, user_id, expires)
+    return token
 
 
-def get_requirements(pid):
-    with conn() as c:
-        rows = c.execute("SELECT * FROM requirements WHERE project_id=? ORDER BY seq", (pid,)).fetchall()
-    return [_req(r) for r in rows]
-
-
-def update_requirement(pid, seq, **f):
-    sets, vals = [], []
-    for k, v in f.items():
-        if k in _REQ_JSON:
-            sets.append(f"{k}_json=?")
-            vals.append(json.dumps(v))
-        elif k in _REQ_FIELDS:
-            sets.append(f"{k}=?")
-            vals.append(v)
-        else:
-            raise KeyError(k)
-    with conn() as c:
-        c.execute(f"UPDATE requirements SET {', '.join(sets)} WHERE project_id=? AND seq=?", (*vals, pid, seq))
-
-
-# --- sdlc runs ---
-def add_sdlc_run(pid, factors, ranking, rationale):
-    with conn() as c:
-        c.execute(
-            "INSERT INTO sdlc_runs (project_id, factors_json, ranking_json, rationale_json, stale, created_at)"
-            " VALUES (?,?,?,?,0,?)",
-            (pid, json.dumps(factors), json.dumps(ranking), json.dumps(rationale), _now()),
-        )
-
-
-def latest_sdlc_run(pid):
-    with conn() as c:
-        r = c.execute("SELECT * FROM sdlc_runs WHERE project_id=? ORDER BY id DESC LIMIT 1", (pid,)).fetchone()
-    if not r:
+def session_user(token: str | None) -> dict | None:
+    if not token:
         return None
-    return {"factors": json.loads(r["factors_json"]), "ranking": json.loads(r["ranking_json"]),
-            "rationale": json.loads(r["rationale_json"]), "stale": bool(r["stale"]),
-            "created_at": r["created_at"]}
+    return one(
+        "SELECT u.id, u.email, u.name FROM sessions s JOIN users u ON u.id = s.user_id "
+        "WHERE s.token=? AND s.expires_at > ?",
+        token,
+        now(),
+    )
 
 
-def mark_sdlc_stale(pid):
-    with conn() as c:
-        c.execute("UPDATE sdlc_runs SET stale=1 WHERE project_id=?", (pid,))
+def init() -> None:
+    """Create tables and the demo user (M2) if a demo password is set in .env."""
+    config.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with closing(_connect()) as c:
+        c.executescript(SCHEMA)
+    if config.DEMO_PASSWORD and not one("SELECT id FROM users WHERE email=?", config.DEMO_EMAIL):
+        add_user(config.DEMO_EMAIL, "Demo user", config.DEMO_PASSWORD)

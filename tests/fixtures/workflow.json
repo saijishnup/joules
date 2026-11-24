@@ -1,0 +1,10 @@
+{
+  "summary": "Regulated plant work with fast-changing scheduler and portal software: V-Model gates for the plant, sprints for the software.",
+  "phases": [
+    {"name": "Plan and baseline", "activities": ["Threat model", "DPDP data map", "Sign requirement baseline"], "roles": ["Project manager", "Architect"], "deliverables": ["Baseline v1", "Data map"], "checkpoints": ["DPDP purpose check"], "entry": "Brief approved", "exit": "Baseline v1 signed"},
+    {"name": "Design", "activities": ["Cooling and power design review", "Tenant isolation design"], "roles": ["Architect"], "deliverables": ["Design pack", "PUE model"], "checkpoints": ["PUE model at or below 1.40"], "entry": "Baseline v1 signed", "exit": "Design review passed"},
+    {"name": "Build in sprints", "activities": ["Portal and scheduler sprints", "SAST and IaC scan per merge"], "roles": ["Dev team"], "deliverables": ["Working increments"], "checkpoints": ["Security scan clean per merge"], "entry": "Design review passed", "exit": "Sprint demo accepted"},
+    {"name": "Verify", "activities": ["IEGC ride-through test", "CERT-In incident drill", "Masking test set"], "roles": ["QA", "Security lead"], "deliverables": ["Test report"], "checkpoints": ["6-hour incident clock met in drill"], "entry": "Feature complete", "exit": "Test report signed"},
+    {"name": "Release", "activities": ["Compliance check", "BRSR data check"], "roles": ["Compliance officer"], "deliverables": ["Release note", "Compliance record"], "checkpoints": ["Gate 2 sign-off"], "entry": "Test report signed", "exit": "Gate 2 sign-off"}
+  ]
+}

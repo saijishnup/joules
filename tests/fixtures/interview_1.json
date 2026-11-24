@@ -1,0 +1,8 @@
+{
+  "questions": [
+    {"id": "Q1", "topic": "scope", "text": "Who will run workloads on the campus?", "why": "Sets tenancy, isolation and access-control requirements.", "options": ["One company, internal teams only", "Several enterprise tenants (colocation)", "Public GPU cloud for any customer", "Not sure"], "recommended": 1},
+    {"id": "Q2", "topic": "power", "text": "How will the campus meet its peak power load?", "why": "Sets the energy and carbon requirements, and the Scope 2 method.", "options": ["Grid only, from the DISCOM", "Grid plus on-site solar", "Open-access renewable PPA", "Not sure"], "recommended": 2},
+    {"id": "Q3", "topic": "cooling", "text": "Which cooling approach is planned for the GPU halls?", "why": "Drives PUE, water use (WUE) and the reporting fields that follow.", "options": ["Air cooling with hot-aisle containment", "Direct-to-chip liquid cooling", "Immersion cooling", "Not sure"], "recommended": 1},
+    {"id": "Q4", "topic": "data", "text": "Will tenant data include personal data of Indian residents?", "why": "Decides whether DPDP Act duties and breach reporting apply.", "options": ["Yes, regularly", "Possibly, tenants decide", "No, infrastructure telemetry only", "Not sure"], "recommended": 1}
+  ]
+}

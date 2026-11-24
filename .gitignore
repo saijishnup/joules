@@ -1,29 +1,16 @@
+﻿# secrets and local tools
 .env
-.env.*
-!.env.example
-!frontend/.env.production.example
+.tools/
 .venv/
+# raw sources and runtime data stay local (licences, size)
+sources-raw/
+data/
+*IFRS*
+*CSA-*
+# build output and caches
+node_modules/
+dist/
 __pycache__/
 *.pyc
 .pytest_cache/
-var/*
-!var/.gitkeep
-kb/docs/*
-!kb/docs/.gitkeep
-frontend/node_modules/
-frontend/dist/
-docs/
-.vscode/
-.idea/
-.DS_Store
-*.log
-*.db
-*.sqlite
-*.sqlite3
-*.pdf
-*.pem
-*.key
-*.crt
-secrets/
-private/
-attachments/
+.ruff_cache/
