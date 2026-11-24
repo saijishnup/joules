@@ -1,12 +1,12 @@
 # joules
 
-**An Agentic SDLC Ranker for Sustainable AI Infrastructure.** NITK BTech CSE, Software Engineering mini project.
+**An Agentic SDLC Ranker for Sustainable AI Infrastructure.**
 
-Joules interviews a stakeholder, drafts requirements grounded in 47 public laws and standards on energy, AI governance,
+Joules interviews a stakeholder, drafts requirements grounded in 40+ public laws and standards on energy, AI governance,
 data centres and cloud, and carbon/ESG reporting, finds conflicts between them, and ranks seven SDLC models with a score
 you can recompute by hand. People approve at two gates. Every requirement cites a document, section and page.
 
-![Requirements deck with evidence drawer](docs/screens/requirements.png)
+![Requirements deck with evidence drawer](docs/screens/requirements.webp)
 
 ## What it does
 
@@ -22,15 +22,10 @@ you can recompute by hand. People approve at two gates. Every requirement cites 
 
 | | |
 |---|---|
-| ![Interview](docs/screens/interview.png) | ![Conflicts](docs/screens/conflicts.png) |
-| ![SDLC ranking](docs/screens/sdlc.png) | ![One-page report](docs/screens/export.png) |
+| ![Interview](docs/screens/interview.webp) | ![Conflicts](docs/screens/conflicts.webp) |
+| ![SDLC ranking](docs/screens/sdlc.webp) | ![One-page report](docs/screens/export.webp) |
 
 ## How it works
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-dark.png">
-  <img alt="Architecture" src="docs/diagrams/architecture-light.png" width="720">
-</picture>
 
 ```mermaid
 flowchart LR
@@ -65,7 +60,31 @@ so the same factor levels always give the same ranking: `score = clamp(5, 97, ba
 
 ### Use-case diagram
 
-![Use-case diagram](docs/use-case.svg)
+```mermaid
+flowchart LR
+  S([Stakeholder])
+  A([Approver])
+  subgraph J[Joules]
+    U1(Sign in, pick a stakeholder role)
+    U2(Write brief, attach files - masked)
+    U3(Answer interview cards)
+    U4(Review, edit, regenerate requirements)
+    U5(Resolve conflicts)
+    U6(Approve baseline - gate 1)
+    U7(Adjust factor ratings, see ranking)
+    U8(Approve SDLC choice - gate 2)
+    U9(Export one-page report, JSON)
+    U10(Read evaluation, terms, privacy)
+  end
+  I([Interviewer agent])
+  N([Analyst agent])
+  P([Planner agent])
+  S --- U1 & U2 & U3 & U4 & U5 & U7 & U9 & U10
+  A --- U6 & U8
+  U3 --- I
+  U4 & U5 --- N
+  U7 & U8 --- P
+```
 
 ### Sequence diagram
 
@@ -151,7 +170,7 @@ backend/     9 Python files (above)
 frontend/    React app: src/pages, src/stages, src/components, api.ts, help.ts, index.css
 tests/       pytest, fixtures (mock LLM answers, templates, case studies), eval.py
 sources/     manifest.csv: file, licence, link, jurisdiction, date, version, public flag
-docs/        diagrams and screenshots
+docs/        screenshots
 ```
 
 Raw sources (`sources-raw/`) and runtime data (`data/`) stay local. Sources marked not public (BEE, CSA, GHG Protocol,
