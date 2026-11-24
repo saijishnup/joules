@@ -8,6 +8,8 @@ you can recompute by hand. People approve at two gates. Every requirement cites 
 
 ![Requirements deck with evidence drawer](docs/screens/requirements.webp)
 
+**Live demo:** https://joules.ashybay-bab00727.centralindia.azurecontainerapps.io (sign-in is invite-only; the first load after idle takes a few seconds). It answers with the offline mock model; live models are off unless the author's gateway is running.
+
 ## What it does
 
 1. **Brief.** Pick a stakeholder role, write a brief, attach up to two files. Personal data is masked before any model sees it.
