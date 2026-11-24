@@ -1,6 +1,7 @@
 """FastAPI routes: auth, projects, pipeline actions, one SSE stream per project; serves the built frontend."""
 
 import asyncio
+import csv
 import json
 from collections.abc import AsyncIterable
 from contextlib import asynccontextmanager
@@ -276,7 +277,7 @@ def _req(pid: int, rid: str) -> dict:
 @app.patch("/api/projects/{pid}/requirements/{rid}")
 def change_requirement(pid: int, rid: str, b: ReqAction, u: User):
     p, row = owned(pid, u), _req(pid, rid)
-    data = row["data"]
+    data = dict(row["data"])  # copy: save_requirement compares old and new text
     if b.action == "edit":
         if not b.statement.strip():
             raise HTTPException(422, "Write the new statement.")
@@ -350,6 +351,13 @@ async def approve(pid: int, gate: Annotated[int, Path(ge=1, le=2)], b: Approve, 
 @app.get("/api/models")
 def models():
     return [{"id": m, "status": llm.STATUS.get(m, "ok")} for m in config.CHAIN]
+
+
+@app.get("/api/sources")
+def sources():
+    """Manifest rows for the Terms page and the report's licence line."""
+    with config.MANIFEST.open(encoding="utf-8") as f:
+        return list(csv.DictReader(f))
 
 
 @app.get("/api/eval")

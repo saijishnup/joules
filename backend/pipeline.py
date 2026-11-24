@@ -213,18 +213,18 @@ async def workflow_step(pid: int, model: str) -> None:
 
 
 def save_requirement(p: dict, row: dict, data: dict, status: str) -> dict:
-    """Re-check rules for one requirement; any change after gate 1 opens a new baseline (v2, v3...)."""
+    """Re-check rules for one requirement. New text bumps its version; any change but accept after gate 1
+    opens a new baseline (v2, v3...) and locks SDLC again."""
     others = [r for r in requirements(p["id"]) if r["id"] != row["rid"]]
     retrieved = {k: v["tier"] for k, v in p["artefacts"].get("evidence", {}).items()}
     data["flags"] = rules.check(data, retrieved, others)
     data["confidence"] = rules.confidence(data, retrieved)
-    db.update(
-        "requirements", row["id"], data=data, status=status, version=row["version"] + 1, confidence=data["confidence"]
-    )
-    if gate_ok(p, 1):
+    version = row["version"] + (data["statement"] != row["data"]["statement"])
+    db.update("requirements", row["id"], data=data, status=status, version=version, confidence=data["confidence"])
+    if gate_ok(p, 1) and status != "accepted":
         db.update("projects", p["id"], baseline_version=p["baseline_version"] + 1, ranking=[], workflow={})
     refresh(p["id"])
-    return data | {"status": status, "version": row["version"] + 1}
+    return data | {"status": status, "version": version}
 
 
 def act(pid: int, kind: str, detail: dict) -> None:
