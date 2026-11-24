@@ -15,7 +15,7 @@ _hits: dict[str, deque] = defaultdict(deque)
 
 
 def allow(key: str, limit: int, window: float) -> bool:
-    """In-memory sliding-window rate limit (NFR-03). ponytail: single process only; Redis if it ever scales out."""
+    """In-memory sliding-window rate limit (NFR-03). Single process only; Redis if it ever scales out."""
     q, now = _hits[key], time.monotonic()
     while q and now - q[0] > window:
         q.popleft()

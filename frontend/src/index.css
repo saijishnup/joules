@@ -1,4 +1,4 @@
-/* Joules styles: tokens and components ported from the approved mockup (the approved mockup, PRD §18). */
+/* Joules styles: tokens and components ported from the approved mockup (PRD §18). */
 @import "tailwindcss";
 :root {
   --bg: #000000;

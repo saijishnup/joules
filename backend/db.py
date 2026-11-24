@@ -45,7 +45,7 @@ def now() -> str:
 
 
 def _connect() -> sqlite3.Connection:
-    # ponytail: new connection per call; fine for one uvicorn worker, pool if it ever scales out.
+    # Note: new connection per call; fine for one uvicorn worker, pool if it ever scales out.
     c = sqlite3.connect(config.DB_PATH, isolation_level=None)
     c.row_factory = sqlite3.Row
     c.execute("PRAGMA foreign_keys=ON")
