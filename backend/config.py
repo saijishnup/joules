@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 env = os.getenv
 
-DATA = ROOT / "data"
+DATA = Path(env("JOULES_DATA", str(ROOT / "data")))  # tests point this at a temp folder
 DB_PATH = Path(env("JOULES_DB", str(DATA / "joules.db")))
 FIXTURES = ROOT / "tests" / "fixtures"
 SOURCES_RAW = ROOT / "sources-raw"

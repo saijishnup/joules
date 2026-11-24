@@ -29,3 +29,6 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 120
 src = ["backend", "tests"]
+
+[tool.ruff.lint]
+ignore = ["SIM905"]  # word lists read better as one split string

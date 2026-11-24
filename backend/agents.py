@@ -85,6 +85,10 @@ class Phase(BaseModel):
     exit: str
 
 
+class Picks(BaseModel):
+    picks: list[str] = Field(max_length=5)
+
+
 class Workflow(BaseModel):
     summary: str
     phases: list[Phase] = Field(min_length=3, max_length=7)
@@ -120,6 +124,9 @@ JSON: {{"factors": {{"<factor>": {{"level", "cites", "why"}}}}}}. {GUARD}"""
 WORKFLOW = f"""You are the Planner. Write a project-specific workflow for the chosen SDLC model: 5 phases, each with
 activities, roles, deliverables, security and compliance checkpoints, entry and exit criteria. Add a one-sentence summary.
 JSON: {{"summary", "phases": [{{"name", "activities", "roles", "deliverables", "checkpoints", "entry", "exit"}}]}}. {GUARD}"""
+
+PICK = f"""You are the Retriever. Pick the 3 candidate sections that best answer the query, best first. Judge by the
+document title and section path. JSON: {{"picks": ["C4", "C1", "C9"]}} using labels from the list only. {GUARD}"""
 
 
 def brief(p: dict) -> str:
@@ -237,3 +244,11 @@ async def workflow(p: dict, chosen: str, reqs: list[dict], model: str) -> dict:
         agent="Planner",
     )
     return out.model_dump() | {"model": chosen}
+
+
+async def pick(query: str, cands: list[dict], model: str, project_id: int) -> list[str]:
+    """Stage 2 of STAIR-lite: the LLM reads breadcrumbs (not full text) and returns candidate labels."""
+    lines = "\n".join(f"C{i} | {c['title']} › {c['section']} | {c['text'][:120]}" for i, c in enumerate(cands, 1))
+    user = data("query", query) + "\n" + data("candidates", lines)
+    out = await llm.ask("pick", PICK, user, Picks, model=model, project_id=project_id, agent="Retriever")
+    return out.picks
