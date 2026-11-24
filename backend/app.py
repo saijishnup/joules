@@ -117,6 +117,8 @@ def signed_in(resp: Response, user_id: int) -> dict:
 
 @app.post("/api/auth/register")
 def register(c: Cred, resp: Response):
+    if not config.SIGNUPS:
+        raise HTTPException(403, "Sign-ups are closed on this deployment.")
     if db.one("SELECT id FROM users WHERE email=?", c.email.lower()):
         raise HTTPException(409, "That email already has an account.")
     return signed_in(resp, db.add_user(c.email, c.name or c.email.split("@")[0], c.password))

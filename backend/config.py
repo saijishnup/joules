@@ -36,6 +36,7 @@ LLM_MAX_TOKENS = int(env("LLM_MAX_TOKENS", "8192"))
 # Seeded demo user (M2); no password in env = no demo user.
 DEMO_EMAIL = env("DEMO_EMAIL", "admin@joules.app")
 PASSWORD = env("PASSWORD", "")
+SIGNUPS = env("SIGNUPS", "on") == "on"  # "off" on the public deploy: only the seeded login works
 SESSION_DAYS = 7
 
 # Input caps (PRD §16) and in-memory rate limits (NFR-03).

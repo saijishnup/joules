@@ -1,0 +1,12 @@
+﻿*
+!pyproject.toml
+!uv.lock
+!.python-version
+!backend
+!sources/manifest.csv
+!tests/fixtures
+!data/index/public
+!frontend
+frontend/node_modules
+frontend/dist
+**/__pycache__
