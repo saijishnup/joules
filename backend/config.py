@@ -29,8 +29,8 @@ LLM_TIMEOUT = float(env("LLM_TIMEOUT", "90"))
 LLM_MAX_TOKENS = int(env("LLM_MAX_TOKENS", "8192"))
 
 # Seeded demo user (M2); no password in env = no demo user.
-DEMO_EMAIL = env("DEMO_EMAIL", "demo@joules.local")
-DEMO_PASSWORD = env("DEMO_PASSWORD", "")
+DEMO_EMAIL = env("DEMO_EMAIL", "admin@joules.app")
+PASSWORD = env("PASSWORD", "")
 SESSION_DAYS = 7
 
 # Input caps (PRD §16) and in-memory rate limits (NFR-03).

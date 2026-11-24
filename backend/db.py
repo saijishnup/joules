@@ -147,7 +147,7 @@ def init() -> None:
     with closing(_connect()) as c:
         c.executescript(SCHEMA)
     demo = one("SELECT id FROM users WHERE email=?", config.DEMO_EMAIL)
-    if config.DEMO_PASSWORD and not demo:
-        add_user(config.DEMO_EMAIL, "Demo user", config.DEMO_PASSWORD)
+    if config.PASSWORD and not demo:
+        add_user(config.DEMO_EMAIL, "Demo user", config.PASSWORD)
     elif demo:
         seed_templates(demo["id"])  # demo user made before templates existed

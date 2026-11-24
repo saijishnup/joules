@@ -108,9 +108,9 @@ def test_auth_required_and_demo_login():
     with TestClient(app) as c:
         assert c.get("/api/projects").status_code == 401
         assert c.post(
-            "/api/auth/login", json={"email": "demo@joules.local", "password": "demo-pass-for-tests"}
+            "/api/auth/login", json={"email": "admin@joules.app", "password": "demo-pass-for-tests"}
         ).is_success
-        assert c.get("/api/me").json()["email"] == "demo@joules.local"
+        assert c.get("/api/me").json()["email"] == "admin@joules.app"
 
 
 def test_sse_first_event(c):

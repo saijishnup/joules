@@ -6,9 +6,9 @@ import db
 def test_seed_login_session_and_cascade():
     db.init()
     db.init()  # idempotent
-    user = db.check_login("DEMO@joules.local", "demo-pass-for-tests")
-    assert user and not db.check_login("demo@joules.local", "wrong")
-    assert db.session_user(db.new_session(user["id"]))["email"] == "demo@joules.local"
+    user = db.check_login("ADMIN@joules.app", "demo-pass-for-tests")
+    assert user and not db.check_login("admin@joules.app", "wrong")
+    assert db.session_user(db.new_session(user["id"]))["email"] == "admin@joules.app"
     pid = db.run("INSERT INTO projects(owner_id, name, answers) VALUES (?,?,?)", user["id"], "P", {"Q1": 1})
     assert db.one("SELECT answers FROM projects WHERE id=?", pid)["answers"] == {"Q1": 1}
     db.run("INSERT INTO audit(project_id, kind) VALUES (?,?)", pid, "llm")

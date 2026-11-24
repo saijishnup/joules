@@ -60,31 +60,10 @@ so the same factor levels always give the same ranking: `score = clamp(5, 97, ba
 
 ### Use-case diagram
 
-```mermaid
-flowchart LR
-  S([Stakeholder])
-  A([Approver])
-  subgraph J[Joules]
-    U1(Sign in, pick a stakeholder role)
-    U2(Write brief, attach files - masked)
-    U3(Answer interview cards)
-    U4(Review, edit, regenerate requirements)
-    U5(Resolve conflicts)
-    U6(Approve baseline - gate 1)
-    U7(Adjust factor ratings, see ranking)
-    U8(Approve SDLC choice - gate 2)
-    U9(Export one-page report, JSON)
-    U10(Read evaluation, terms, privacy)
-  end
-  I([Interviewer agent])
-  N([Analyst agent])
-  P([Planner agent])
-  S --- U1 & U2 & U3 & U4 & U5 & U7 & U9 & U10
-  A --- U6 & U8
-  U3 --- I
-  U4 & U5 --- N
-  U7 & U8 --- P
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/use-case-dark.svg">
+  <img alt="Use-case diagram" src="docs/use-case-light.svg">
+</picture>
 
 ### Sequence diagram
 
@@ -126,14 +105,14 @@ sequenceDiagram
 ## Evaluation
 
 `tests/eval.py` runs 5 seeded case studies through the real pipeline and 40 gold retrieval questions (BM25 vs hybrid vs
-STAIR-lite); results show on the Evaluation page.
+STAIR-lite).
 
 ## Run it locally (Windows, PowerShell)
 
 ```powershell
 # backend: Python 3.12 via uv
 uv sync
-copy .env.example .env          # set DEMO_PASSWORD; OMNIROUTE_API_KEY only for live models
+copy .env.example .env          # set PASSWORD; OMNIROUTE_API_KEY only for live models
 uv run python backend/sources_build.py   # once, about 5 minutes: needs the PDFs in sources-raw/
 uv run uvicorn app:app --app-dir backend --port 8010
 
@@ -143,7 +122,7 @@ npm install
 npm run dev -- --port 5180      # open http://localhost:5180
 ```
 
-Mock mode is the default model, so the app runs fully offline. Sign in as `demo@joules.local` with your `DEMO_PASSWORD`.
+Mock mode is the default model, so the app runs fully offline. Sign in as `admin@joules.app` with your `PASSWORD`.
 Tests: `uv run pytest`. Lint: `uv run ruff check backend tests` and `npx biome check src`.
 
 ## Dependencies

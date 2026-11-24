@@ -6,7 +6,7 @@ import { Avatar } from "../components/ui";
 
 export default function Auth({ mode, onIn }: { mode: string; onIn: (u: User) => void }) {
   const reg = mode === "register";
-  const [f, setF] = useState({ name: "", email: reg ? "" : "demo@joules.local", password: "" });
+  const [f, setF] = useState({ name: "", email: reg ? "" : "admin@joules.app", password: "" });
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
@@ -58,7 +58,7 @@ export default function Auth({ mode, onIn }: { mode: string; onIn: (u: User) => 
           <div className="field">
             <label htmlFor="em">Email</label>
             <input className="in" id="em" type="email" autoComplete="email" value={f.email} onChange={set("email")} />
-            <span className="help">{reg ? "Used only to sign in." : "Seeded demo user: demo@joules.local"}</span>
+            <span className="help">{reg ? "Used only to sign in." : "Seeded demo user: admin@joules.app"}</span>
           </div>
           <div className="field">
             <label htmlFor="pw">Password</label>
