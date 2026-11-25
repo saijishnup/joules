@@ -11,7 +11,44 @@ import config
 import db
 
 STATUS: dict[str, str] = dict.fromkeys(config.CHAIN, "ok")  # model picker dot: ok / rate-limited / offline
+RETRY_AT: dict[str, float] = {}  # model -> epoch second when its 429 clears; the chain skips it until then
 _hits: dict[str, deque] = defaultdict(deque)
+_probe: dict[str, float] = {"at": 0}
+
+
+def retry_after(e: openai.RateLimitError) -> int:
+    """Seconds the provider asks us to wait (Retry-After header), default 60, kept within 5 to 600."""
+    try:
+        return min(max(int(float(e.response.headers.get("retry-after", 60))), 5), 600)
+    except ValueError:
+        return 60
+
+
+async def _up(model: str) -> bool:
+    client, _ = _client(model)
+    try:
+        await client.with_options(timeout=2).models.list()
+    except (openai.APIConnectionError, OSError):
+        return False
+    except openai.APIError:  # 401 etc: the server answered, so it is up
+        return True
+    return True
+
+
+async def model_status() -> list[dict]:
+    """Picker data: gateway and Ollama reachability (re-checked every 20 s) plus the 429 countdown per model."""
+    now = time.time()
+    if now - _probe["at"] > 20:
+        _probe["at"] = now
+        local, gateway = await _up("ollama/x"), await _up("gateway")  # two checks, not one per model
+        for m in config.CHAIN:
+            if m != "mock" and STATUS[m] != "rate-limited":
+                STATUS[m] = "ok" if (local if m.startswith("ollama/") else gateway) else "offline"
+    for m, t in list(RETRY_AT.items()):
+        if t <= now:
+            RETRY_AT.pop(m)
+            STATUS[m] = "ok"
+    return [{"id": m, "status": STATUS[m], "retry_in": max(0, int(RETRY_AT.get(m, 0) - now))} for m in config.CHAIN]
 
 
 def allow(key: str, limit: int, window: float) -> bool:
@@ -68,8 +105,10 @@ async def ask(
     """Validated answer from the first model in the chain that works. Every attempt is written to audit.
     `chain` replaces the default fallback list (the eval judge uses its own)."""
     if not allow(f"llm:{project_id}", config.LLM_PER_HOUR, 3600):
-        raise RuntimeError("LLM call limit reached (60 per hour). Try again later.")
+        raise RuntimeError(f"LLM call limit reached ({config.LLM_PER_HOUR} per hour). Try again later.")
     for m in chain or chain_from(model):
+        if RETRY_AT.get(m, 0) > time.time():  # still inside its 429 window: do not waste a call
+            continue
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         for _ in range(2):  # 1 retry with the validation error
             start, tin, tout = time.monotonic(), 0, 0
@@ -81,6 +120,7 @@ async def ask(
                     text, tin, tout = await _call(m, messages)
                 out = schema.model_validate_json(text)
                 STATUS[m] = "ok"
+                RETRY_AT.pop(m, None)
                 _audit(project_id, agent, m, messages, text, evidence_ids, tin, tout, start)
                 return out
             except ValidationError as e:
@@ -94,6 +134,8 @@ async def ask(
                 ]
             except (openai.APIError, OSError) as e:  # 429, timeouts, gateway or Ollama down: fall back
                 STATUS[m] = "rate-limited" if isinstance(e, openai.RateLimitError) else "offline"
+                if isinstance(e, openai.RateLimitError):
+                    RETRY_AT[m] = time.time() + retry_after(e)
                 _audit(project_id, agent, m, messages, f"error: {e}", evidence_ids, tin, tout, start)
                 break
     raise RuntimeError(f"No model in the chain answered for {task}.")

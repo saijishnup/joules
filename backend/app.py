@@ -232,7 +232,7 @@ async def run(pid: int, b: Run, u: User):
     if not (step := pl.next_step(p)):
         raise HTTPException(409, "Nothing to run: answer the open questions or approve the gate first.")
     if not llm.allow(f"run:{u['id']}", config.RUNS_PER_HOUR, 3600):
-        raise HTTPException(429, "Run limit reached (10 per hour).")
+        raise HTTPException(429, f"Run limit reached ({config.RUNS_PER_HOUR} per hour).")
     if not pl.start(pid, step, b.model):
         raise HTTPException(409, "A step is already running.")
     return {"started": step.__name__}
@@ -351,8 +351,8 @@ async def approve(pid: int, gate: Annotated[int, Path(ge=1, le=2)], b: Approve, 
 
 
 @app.get("/api/models")
-def models():
-    return [{"id": m, "status": llm.STATUS.get(m, "ok")} for m in config.CHAIN]
+async def models():
+    return await llm.model_status()
 
 
 @app.get("/api/sources")

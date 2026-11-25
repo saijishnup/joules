@@ -35,7 +35,7 @@ export default function Brief({ ctx, model, setModel }: Props) {
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (!f.name.trim() || !f.brief.trim()) return setErr("Give the project a name and write a brief.");
-    if (n > 1500) return setErr("The brief is over 1,500 words.");
+    if (n > 600) return setErr("The brief is over 600 words.");
     setBusy(true);
     setErr("");
     try {
@@ -104,8 +104,8 @@ export default function Brief({ ctx, model, setModel }: Props) {
                 ? `${p?.artefacts.masked ?? 0} items were masked`
                 : `${masks} items will be masked before sending`}
             </span>
-            <span className="cnt" style={{ color: n > 1500 ? "var(--lo)" : undefined }}>
-              {n} / 1,500 words
+            <span className="cnt" style={{ color: n > 600 ? "var(--lo)" : undefined }}>
+              {n} / 600 words
             </span>
           </div>
         </div>
