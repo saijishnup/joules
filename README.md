@@ -114,6 +114,8 @@ npm install
 npm run dev -- --port 5180      # open http://localhost:5180
 ```
 
+After the first setup, `.\run.ps1` (or double-click `run.bat`) builds the UI if needed and serves everything on http://localhost:8010.
+
 Mock mode is the default model, so the app runs fully offline. Sign in as `admin@joules.app` with your `PASSWORD`.
 Tests: `uv run pytest`. Lint: `uv run ruff check backend tests` and `npx biome check src`.
 
