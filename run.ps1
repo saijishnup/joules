@@ -16,7 +16,7 @@ function Start-IfDown($name, $url, $cmd) {
     if (Test-Up $url) { Write-Host ("{0,-10} up" -f $name); return }
     if (-not $cmd) { Write-Host ("{0,-10} DOWN, no start command found (the chain skips it)" -f $name); return }
     Write-Host ("{0,-10} starting: {1}" -f $name, $cmd)
-    if (Test-Path -LiteralPath $cmd) { Start-Process -LiteralPath $cmd -WindowStyle Minimized }  # a launcher file
+    if (Test-Path -LiteralPath $cmd) { Start-Process -FilePath $cmd -WindowStyle Minimized }  # a launcher file
     else { Start-Process powershell -WindowStyle Minimized -ArgumentList "-NoProfile", "-Command", $cmd }
     foreach ($i in 1..30) { Start-Sleep 1; if (Test-Up $url) { Write-Host ("{0,-10} up" -f $name); return } }
     Write-Host ("{0,-10} still DOWN after 30 s (the chain skips it)" -f $name)
