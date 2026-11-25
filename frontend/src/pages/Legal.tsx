@@ -30,7 +30,7 @@ export function Terms() {
         <h2>Use</h2>
         <ul>
           <li>Use sample or anonymised briefs only. Do not upload confidential documents.</li>
-          <li>Accounts are rate-limited: 10 runs and 60 model calls per hour.</li>
+          <li>Accounts are rate-limited: 40 runs and 300 model calls per hour.</li>
           <li>The code is licensed AGPL-3.0, because PyMuPDF is AGPL-3.0.</li>
         </ul>
         <h2>Third-party sources and licences</h2>

@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
 import Topbar from "./components/Topbar";
+import About from "./pages/About";
 import Auth from "./pages/Auth";
 import Evaluation from "./pages/Evaluation";
 import { Privacy, Terms } from "./pages/Legal";
@@ -40,7 +41,7 @@ export default function App() {
   }, []);
 
   if (user === undefined) return null;
-  const open = ["login", "register", "terms", "privacy"].includes(page);
+  const open = ["login", "register", "about", "terms", "privacy"].includes(page);
   if (!user && !open) {
     location.hash = "#/login";
     return null;
@@ -58,6 +59,8 @@ export default function App() {
       <Workspace key={a || "new"} id={page === "new" ? null : Number(a)} stage={Number(b) || 0} mini={mini} />
     ) : page === "eval" ? (
       <Evaluation />
+    ) : page === "about" ? (
+      <About />
     ) : page === "terms" ? (
       <Terms />
     ) : page === "privacy" ? (

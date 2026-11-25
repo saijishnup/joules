@@ -38,6 +38,9 @@ export default function Topbar({ page, user, theme, onTheme, onMini, onOut }: Pr
           <a href="#/eval" className={page === "eval" ? "on" : ""}>
             Evaluation
           </a>
+          <a href="#/about" className={page === "about" ? "on" : ""}>
+            About
+          </a>
         </nav>
       )}
       <div className="tright">
