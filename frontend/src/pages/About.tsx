@@ -2,7 +2,17 @@
 import { Sequence, UseCase } from "../components/Diagrams";
 import { Avatar, Footer } from "../components/ui";
 
-const FLOW = ["Brief", "Interview", "Requirements", "Conflicts", "Gate 1", "SDLC rank", "Gate 2", "Report"];
+// [step, what happens, human step?]
+const FLOW: [string, string, boolean][] = [
+  ["Brief", "Role, text, optional files", false],
+  ["Interview", "Cards fill the gaps", false],
+  ["Requirements", "Cited, scored by code", false],
+  ["Conflicts", "Trade-offs resolved", false],
+  ["Gate 1", "Approve the baseline", true],
+  ["SDLC rank", "7 models, 13 factors", false],
+  ["Gate 2", "Approve the choice", true],
+  ["Report", "One A4 page + JSON", false],
+];
 const AGENTS = [
   ["Interviewer", "Asks 3 to 4 multiple-choice cards per round, tailored to the role. Round 2 covers gaps only."],
   ["Analyst", "Drafts requirements with cited evidence, confirms conflicts, rewrites on feedback."],
@@ -44,15 +54,17 @@ export default function About() {
         ))}
       </div>
       <section>
-        <h2>One run</h2>
-        <div className="flow">
-          {FLOW.map((s, i) => (
-            <span key={s} className={s.startsWith("Gate") ? "g" : ""}>
-              {i > 0 && <i>→ </i>}
-              {s}
-            </span>
+        <h2>From brief to report</h2>
+        <ol className="flow">
+          {FLOW.map(([s, d, human], i) => (
+            <li key={s} className={human ? "g" : ""}>
+              <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+              <b>{s}</b>
+              <small>{d}</small>
+              {human && <em>human gate</em>}
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
       <section>
         <h2>Three agents</h2>

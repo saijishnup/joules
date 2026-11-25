@@ -1,6 +1,7 @@
 // About page diagrams: a simple use-case diagram and a sequence diagram, drawn as SVG with the theme tokens.
 const ink = { fill: "var(--ink)", fontSize: 12.5 } as const;
 const line = { stroke: "var(--line)", strokeWidth: 1.2, fill: "none" } as const;
+const link = { stroke: "var(--mut)", strokeWidth: 1.6, fill: "none" } as const; // actor to use case, clearly visible
 
 const Actor = ({ x, y, name }: { x: number; y: number; name: string }) => (
   <g stroke="var(--mut)" strokeWidth={1.5} fill="none">
@@ -32,7 +33,7 @@ export function UseCase() {
         const left = i < 4;
         return (
           <g key={c}>
-            <path d={left ? `M62 150L250 ${y(i)}` : `M698 150L510 ${y(i)}`} {...line} />
+            <path d={left ? `M66 150L250 ${y(i)}` : `M694 150L510 ${y(i)}`} {...link} />
             <rect x={250} y={y(i) - 16} width={260} height={32} rx={16} fill="var(--surf2)" stroke="var(--acct)" />
             <text x={380} y={y(i) + 4} textAnchor="middle" style={ink}>
               {c}
@@ -69,8 +70,17 @@ export function Sequence() {
     <svg viewBox="0 0 800 470" role="img" aria-label="Sequence diagram of one Joules run">
       <title>One run, step by step</title>
       <defs>
-        <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
-          <path d="M0 0L8 4L0 8z" fill="var(--acct)" />
+        <marker
+          id="arr"
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="11"
+          markerHeight="11"
+          markerUnits="userSpaceOnUse"
+          orient="auto"
+        >
+          <path d="M0 0L10 5L0 10z" fill="var(--acct)" />
         </marker>
       </defs>
       {LANES.map((l, i) => (
@@ -79,7 +89,7 @@ export function Sequence() {
           <text x={x(i)} y={29} textAnchor="middle" style={ink}>
             {l}
           </text>
-          <path d={`M${x(i)} 40V455`} {...line} strokeDasharray="3 5" />
+          <path d={`M${x(i)} 40V455`} {...link} strokeWidth={1} strokeDasharray="4 5" opacity={0.6} />
         </g>
       ))}
       {MSGS.map(([a, b, t], i) => {
@@ -87,9 +97,10 @@ export function Sequence() {
         return (
           <g key={t}>
             <path
-              d={`M${x(a)} ${y(i)}H${x(b) + (b > a ? -2 : 2)}`}
+              d={`M${x(a)} ${y(i)}H${x(b) + (b > a ? -3 : 3)}`}
               stroke="var(--acct)"
-              strokeWidth={1.4}
+              strokeWidth={2}
+              strokeDasharray={b < a ? "6 5" : undefined} /* replies go right to left and are dashed */
               markerEnd="url(#arr)"
             />
             <text x={mid} y={y(i) - 7} textAnchor="middle" style={{ ...ink, fontSize: 11.5 }}>
