@@ -127,8 +127,24 @@ JSON: {{"conflicts": [{{"a": "FR-EN-001", "b": "NFR-DC-002", "confirmed": true, 
 "fix": "..."}}]}}. {GUARD}"""
 REGENERATE = f"""You are the Analyst. Rewrite one requirement using the reviewer's feedback. Same fields as before,
 statement in "shall" form, measurable acceptance, evidence labels from the list only. JSON: one requirement. {GUARD}"""
+FACTOR_ANCHORS = """High / Low means:
+- Requirement stability: High = scope fixed by law or contract; Low = pilot, unclear or evolving needs.
+- Regulatory criticality: High = a named law or standard must be met and audited; Low = none.
+- Security risk: High = personal data, critical infrastructure or attackers; Low = internal, public data.
+- Project complexity: High = many parties, integrations or new technology; Low = one team, known technology.
+- System size: High = very large (megawatts, millions of users or records); Low = small.
+- Legacy-system dependence: High = must integrate with or migrate old systems; Low = greenfield.
+- Expected change frequency: High = frequent releases, evolving rules or new data feeds; Low = one-off, fixed delivery.
+- Need for continuous delivery: High = releases weekly or fortnightly, always-on service; Low = single handover.
+- Stakeholder availability: High = users review often; Low = hard to reach.
+- Testing and documentation formality: High = audit evidence, assurance or sign-off required; Low = informal.
+- Budget and schedule pressure: High = fixed budget or tight deadline; Low = relaxed.
+- Need for formal verification: High = legally or safety-critical proof of correctness; Medium = audit trail only; Low = none.
+- Failure consequence: High = harm, public-service outage or legal penalty; Low = minor inconvenience.
+Rate from signals in the requirements, not from the domain. Use the whole scale: most projects have Low or Medium ratings."""
 PLANNER = f"""You are the Planner. Rate each of these 13 SDLC factors Low, Medium or High for this project, citing
 requirement IDs that justify the rating: {", ".join(rules.FACTORS)}.
+{FACTOR_ANCHORS}
 JSON: {{"factors": {{"<factor>": {{"level", "cites", "why"}}}}}}. {GUARD}"""
 WORKFLOW = f"""You are the Planner. Write a project-specific workflow for the chosen SDLC model: 5 phases, each with
 activities, roles, deliverables, security and compliance checkpoints, entry and exit criteria. Add a one-sentence summary.
