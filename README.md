@@ -60,48 +60,40 @@ so the same factor levels always give the same ranking: `score = clamp(5, 97, ba
 
 ### Use-case diagram
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/use-case-dark.svg">
-  <img alt="Use-case diagram" src="docs/use-case-light.svg">
-</picture>
+```mermaid
+flowchart LR
+  S([Stakeholder]) --- U1(Write a brief)
+  S --- U2(Answer interview cards)
+  S --- U3(Review cited requirements)
+  S --- U4(Resolve conflicts)
+  A([Approver]) --- U5("Approve gate 1: requirements")
+  A --- U6("Approve gate 2: SDLC choice")
+  A --- U7(Export one-page report)
+```
 
 ### Sequence diagram
 
 ```mermaid
 sequenceDiagram
   actor U as Stakeholder
-  participant B as Browser (React)
-  participant A as FastAPI
-  participant P as pipeline
-  participant L as agents + LLM
-  participant R as retrieval
-  participant Q as rules
+  participant A as App (FastAPI)
+  participant L as Agents + LLM
+  participant Q as Rules (code)
   participant D as SQLite
-  U->>B: brief + role
-  B->>A: POST /projects/{id}/run
-  A->>Q: mask
-  A->>P: start interview step
-  P->>R: BM25 + Chroma, LLM picks 3
-  P->>L: Interviewer questions
-  P->>D: save stage 1
-  P-->>B: SSE question
-  U->>B: answer cards
-  B->>A: POST answers, run
-  P->>R: evidence per answer
-  P->>L: Analyst draft
-  P->>Q: validate, confidence, conflict pairs
-  P->>L: Analyst confirms conflicts
-  P->>D: save requirements, conflicts
-  P-->>B: SSE requirement, conflict
-  U->>B: resolve conflicts, approve gate 1
-  B->>A: POST gates/1
-  P->>L: Planner rates 13 factors
-  P->>Q: rank 7 models
-  P->>L: Planner workflow
-  P-->>B: SSE ranking
-  U->>B: approve gate 2, export
+  U->>A: 1. brief + role
+  A->>Q: 2. mask personal data
+  A->>L: 3. retrieve sources, ask questions
+  L-->>U: 4. interview cards
+  U->>A: 5. answers
+  A->>L: 6. draft requirements with evidence
+  L->>Q: 7. check wording, citations, confidence
+  Q->>D: 8. save requirements and conflicts
+  U->>A: 9. resolve conflicts, approve gate 1
+  A->>Q: 10. rank 7 SDLC models
+  Q-->>U: 11. ranking + workflow, approve gate 2
 ```
 
+The same two diagrams are on the app's About page.
 ## Evaluation
 
 `tests/eval.py` runs 5 seeded case studies through the real pipeline and 40 gold retrieval questions (BM25 vs hybrid vs
