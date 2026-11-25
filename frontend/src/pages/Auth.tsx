@@ -33,7 +33,7 @@ export default function Auth({ mode, onIn }: { mode: string; onIn: (u: User) => 
             Requirements that cite their sources.
           </h1>
           <p className="muted" style={{ maxWidth: "52ch" }}>
-            Three agents interview you, draft requirements from 47 public standards and laws on energy, AI governance,
+            Three agents interview you, draft requirements from 40+ public standards and laws on energy, AI governance,
             data centres and ESG, then rank seven SDLC models with a score you can recompute by hand.
           </p>
           <div className="trio">

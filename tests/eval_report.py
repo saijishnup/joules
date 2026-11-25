@@ -31,7 +31,7 @@ th,td{{text-align:left;padding:7px 8px;border-bottom:1px solid #EEF0F2;vertical-
 td i{{display:block;height:8px;border-radius:4px;background:#9BC400}}.ok{{color:#1F7D71}}.bad{{color:#C2412D}}code{{background:#F3F4F6;padding:2px 6px;border-radius:6px}}
 li small{{color:#6B7280}}</style>
 <p style="color:#6B7280">Joules · viva notes</p><h1>Evaluation</h1>
-<p>Run {h(e["generated"])} with <code>{h(e["model"])}</code> through the real pipeline (retrieval, three agents, rules, gates skipped by a scripted stakeholder who always picks the recommended option). Separate database <code>data/eval.db</code>, full source index (47 documents, 6,447 sections).</p>
+<p>Run {h(e["generated"])} with <code>{h(e["model"])}</code> through the real pipeline (retrieval, three agents, rules, gates skipped by a scripted stakeholder who always picks the recommended option). Separate database <code>data/eval.db</code>, full source index (40+ documents, 6,447 sections).</p>
 <h2>Metrics</h2><div class=tiles>{metrics}</div>
 <h2>How each metric is computed</h2><ul>
 <li><b>Citation validity</b>: share of cited leaves that retrieval actually returned. Invented labels are removed by <code>rules.check</code> and counted.</li>
