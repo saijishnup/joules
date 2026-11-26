@@ -193,6 +193,20 @@ def delete_project(pid: int, u: User):
     return {"ok": True}
 
 
+@app.post("/api/projects/{pid}/reset")
+def reset_project(pid: int, u: User):
+    """Back to stage 0 so the demo can run again: keeps name, role, area, brief and uploads; clears the rest."""
+    p = owned(pid, u)
+    if (t := pl.TASKS.get(pid)) and not t.done():
+        raise HTTPException(409, "A step is still running.")
+    for table in ("requirements", "conflicts", "approvals", "audit"):
+        db.run(f"DELETE FROM {table} WHERE project_id=?", pid)
+    keep = {"masked": p["artefacts"].get("masked", 0)}  # PII count of the brief, shown on the Brief stage
+    db.update("projects", pid, answers={}, factors={}, ranking=[], workflow={}, artefacts=keep)
+    db.update("projects", pid, stage=0, baseline_version=0, updated_at=db.now())
+    return state(pid, u)
+
+
 @app.post("/api/projects/{pid}/upload")
 async def upload(pid: int, name: str, req: Request, u: User):
     """Raw file body (PDF, TXT, MD); parsed, capped, masked, stored. Raw bytes are never kept."""

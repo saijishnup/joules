@@ -1,5 +1,5 @@
 // Projects: compact header (title, search, New project), cards with area chip, stage progress and IST time.
-import { Plus, Search, Trash2 } from "lucide-react";
+import { Plus, RotateCcw, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api, ist, type ProjectRow, STAGES } from "../api";
 import { Avatar, Chip, Footer } from "../components/ui";
@@ -16,6 +16,12 @@ export default function Projects() {
       return;
     await api(`/projects/${p.id}`, "DELETE");
     setRows((r) => r?.filter((x) => x.id !== p.id) ?? null);
+  }
+
+  async function reset(p: ProjectRow) {
+    if (!confirm(`Reset "${p.name}"? This clears everything except the brief and uploads.`)) return;
+    const s = await api<ProjectRow>(`/projects/${p.id}/reset`, "POST");
+    setRows((r) => r?.map((x) => (x.id === p.id ? { ...x, stage: s.stage, updated_at: s.updated_at } : x)) ?? null);
   }
 
   const shown = rows?.filter((p) => p.name.toLowerCase().includes(q.toLowerCase())) ?? [];
@@ -69,6 +75,19 @@ export default function Projects() {
                 <div className="prog" style={{ flex: 1 }}>
                   <i style={{ width: `${((p.stage + 1) / 7) * 100}%` }} />
                 </div>
+                <button
+                  type="button"
+                  className="ib"
+                  style={{ height: 26, minWidth: 26, border: 0 }}
+                  aria-label={`Reset ${p.name}`}
+                  title="Reset to the brief"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    reset(p).catch((err) => alert(err.message));
+                  }}
+                >
+                  <RotateCcw />
+                </button>
                 <button
                   type="button"
                   className="ib"

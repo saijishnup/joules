@@ -89,6 +89,12 @@ def test_full_mock_run(c):
     )
     s = c.get(f"/api/projects/{pid}").json()
     assert s["baseline_version"] == 2 and s["gates"] == {"1": False, "2": False} and s["stage"] == 4
+    # reset: back to stage 0 with the brief kept, everything else cleared; other users get 404
+    with TestClient(app) as other:
+        other.post("/api/auth/register", json={"email": f"r{time.time_ns()}@test.local", "password": "longpass1"})
+        assert other.post(f"/api/projects/{pid}/reset").status_code == 404
+    s = c.post(f"/api/projects/{pid}/reset").json()
+    assert (s["stage"], s["requirements"], s["audit"], s["ranking"]) == (0, [], [], []) and s["brief_masked"]
 
 
 def test_owner_check_caps_and_delete(c):
