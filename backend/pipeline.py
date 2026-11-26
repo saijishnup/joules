@@ -12,7 +12,6 @@ import retrieval
 import rules
 
 log = logging.getLogger("joules")
-STAGES = ["Brief", "Interview", "Requirements", "Conflicts", "Approve", "SDLC", "Export"]
 TASKS: dict[int, asyncio.Task] = {}
 LISTENERS: dict[int, set[asyncio.Queue]] = defaultdict(set)
 

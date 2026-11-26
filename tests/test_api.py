@@ -5,7 +5,6 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-import config
 import db
 import pipeline
 from app import app
@@ -73,7 +72,7 @@ def test_full_mock_run(c):
     assert c.post(f"/api/projects/{pid}/gates/1", json={"name": "Asha", "role": "Architect"}).json() == {"stage": 4}
     wait(pid)
     s = c.get(f"/api/projects/{pid}").json()
-    assert s["stage"] == 5 and s["ranking"][0] == s["ranking"][0] | {"model": "Agile-V hybrid", "score": 87}
+    assert s["stage"] == 5 and s["ranking"][0] == s["ranking"][0] | {"model": "Agile-V hybrid", "score": 86}
     assert len(s["workflow"]["phases"]) == 5
     r = c.put(f"/api/projects/{pid}/factors", json={"levels": {"Expected change frequency": "Low"}}).json()
     assert r["ranking"][0]["model"] != "Agile-V hybrid"
@@ -124,10 +123,3 @@ def test_sse_first_event(c):
             if line.startswith("data:"):
                 break
     assert "event: stage" in lines and 'data: {"stage": 0}' in lines
-
-
-def test_signups_can_be_closed(monkeypatch):
-    monkeypatch.setattr(config, "SIGNUPS", False)
-    with TestClient(app) as client:
-        r = client.post("/api/auth/register", json={"email": "x@test.local", "password": "longpass1"})
-    assert r.status_code == 403

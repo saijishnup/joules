@@ -88,7 +88,7 @@ def test_conflicts_candidates_and_id_check():
 
 def test_rank_worked_example_and_determinism():
     got = [(r["model"], r["score"]) for r in rules.rank(rules.GPU_CAMPUS)]
-    assert got[:3] == [("Agile-V hybrid", 87), ("Spiral", 83), ("V-Model", 76)]
+    assert got[:3] == [("Agile-V hybrid", 86), ("Spiral", 76), ("DevSecOps", 73)]
     assert rules.rank(rules.GPU_CAMPUS) == rules.rank(dict(reversed(rules.GPU_CAMPUS.items())))
 
 

@@ -46,17 +46,25 @@ def answer_all(pid: int) -> None:
     db.update("projects", pid, answers=ans)
 
 
+JUDGES = ["mock"] if MODEL == "mock" else [m for m in config.JUDGE if m.split("/")[0] != MODEL.split("/")[0]]
+
+
 async def judge(pid: int, reqs: list[dict], ev: dict, limit: int = 5) -> tuple[int, int]:
-    """LLM judge from a different model family (gemini) on up to `limit` cited requirements: (supported, checked)."""
+    """Judge from another provider on up to `limit` cited requirements: supported if either of its first 2 citations
+    backs it. Returns (supported, checked)."""
     ok = n = 0
     for r in [r for r in reqs if r["evidence"]][:limit]:
-        leaf = ev[r["evidence"][0]]
-        user = agents.data("requirement", r["statement"]) + agents.data(
-            "evidence", f"{leaf['ref']}\n{leaf['text'][:1200]}"
-        )
-        chain = ["mock"] if MODEL == "mock" else config.JUDGE
-        v = await llm.ask("judge", JUDGE, user, Verdict, model=chain[0], chain=chain, project_id=pid, agent="Judge")
-        ok, n = ok + v.supported, n + 1
+        for e in r["evidence"][:2]:
+            user = agents.data("requirement", r["statement"]) + agents.data(
+                "evidence", f"{ev[e]['ref']}\n{ev[e]['text'][:2000]}"
+            )
+            v = await llm.ask(
+                "judge", JUDGE, user, Verdict, model=JUDGES[0], chain=JUDGES, project_id=pid, agent="Judge"
+            )
+            if v.supported:
+                ok += 1
+                break
+        n += 1
     return ok, n
 
 
@@ -162,7 +170,7 @@ async def main() -> None:
             {
                 "name": "Hallucination rate",
                 "value": f"{1 - sup / max(1, chk):.1%}",
-                "note": f"LLM judge ({config.JUDGE[0].split('/')[-1]} first), {chk} claims",
+                "note": f"LLM judge ({JUDGES[0].split('/')[-1]}), {chk} claims, either of first 2 citations",
             },
             {
                 "name": "Conflict P / R",

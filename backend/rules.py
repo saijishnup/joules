@@ -202,17 +202,17 @@ MODELS = {
     # NASA SE Handbook + NIST 800-64: sequential phases suit stable, document-heavy work.
     "Waterfall": (50, {S: 10, FM: 5, R: 3, CH: -10, CD: -6, CX: -3, SZ: -2}),
     # NASA SE Handbook (V diagram): each build phase has a matching verification phase.
-    "V-Model": (50, {FV: 8, FM: 6, R: 6, FC: 5, S: 5, CH: -8, CD: -5}),
+    "V-Model": (46, {FV: 8, FM: 5, R: 5, FC: 3, S: 5, CH: -8, CD: -5}),
     # NASA SE Handbook risk management: risk-driven loops for complex, high-consequence systems.
-    "Spiral": (57, {FC: 6, CX: 7, SZ: 3, S: -6}),
+    "Spiral": (52, {FC: 5, CX: 7, SZ: 3, SH: 3, S: -6, CD: -3}),
     # Scrum Guide: short sprints absorb change with engaged stakeholders.
     "Agile": (50, {CH: 10, CD: 6, SH: 5, FM: -6, R: -5, S: -3}),
     # NIST SSDF 800-218: security practices built into continuous delivery.
-    "DevSecOps": (40, {CD: 10, SEC: 7, CH: 4, FM: -2}),
+    "DevSecOps": (44, {CD: 9, SEC: 8, CH: 4, FM: -2}),
     # Scrum Guide + NIST 800-64: fast prototypes only for low-risk, unregulated work.
     "RAD": (52, {CH: 5, BU: 4, CX: -6, FC: -6, R: -6}),
     # NASA SE Handbook + Scrum Guide: sprints inside V-Model verification gates for regulated, changing work.
-    "Agile-V hybrid": (46, {R: 6, CH: 6, FV: 5, SEC: 3, FM: 3, CD: 2, S: -2}),
+    "Agile-V hybrid": (46, {R: 6, CH: 6, FV: 4, SEC: 3, FM: 3, CD: 2, S: -2}),
 }
 WHY = {  # (why it fits, why not)
     "Waterfall": ("stable requirements and extensive approvals", "testing comes late, after design is locked"),
@@ -259,10 +259,10 @@ GPU_CAMPUS = dict.fromkeys(FACTORS, "High") | {_LEGACY: "Low"} | dict.fromkeys([
 if __name__ == "__main__":  # self-check: uv run python backend/rules.py
     got = [(r["model"], r["score"]) for r in rank(GPU_CAMPUS)]
     assert got == [
-        ("Agile-V hybrid", 87),
-        ("Spiral", 83),
-        ("V-Model", 76),
-        ("DevSecOps", 68),
+        ("Agile-V hybrid", 86),
+        ("Spiral", 76),
+        ("DevSecOps", 73),
+        ("V-Model", 64),
         ("Agile", 56),
         ("Waterfall", 40),
         ("RAD", 30),

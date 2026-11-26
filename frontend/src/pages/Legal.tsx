@@ -36,7 +36,7 @@ export function Terms() {
         <h2>Third-party sources and licences</h2>
         <p>
           Quotes are short and attributed. Sources marked "local only" are never shipped in the public index or the
-          repository; the deployed app searches only redistributable sources.
+          repository; the public index holds only redistributable sources.
         </p>
       </div>
       <div className="tbl">

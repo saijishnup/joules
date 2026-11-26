@@ -25,10 +25,8 @@ CHAIN = env(
     "groq/openai/gpt-oss-120b,groq/openai/gpt-oss-20b,groq/qwen/qwen3.8-27b,"
     "gemini/gemini-3-flash-preview,gemini/gemini-2.5-flash-lite,ollama/qwen3.5:4b,mock",
 ).split(",")  # chosen with tests/model_bench.py on 2026-11-26: Groq first (2 to 5 s), Gemini if Groq is limited
-# Judge has its own chain (never Groq: gpt-oss scored 3/6 as a judge in tests/model_bench.py).
-JUDGE = env(
-    "JUDGE_CHAIN", "mistral/voxtral-small-latest,nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b,gemini/gemini-3.8-flash"
-).split(",")
+# Judge chain for tests/eval.py (both 6/6 in tests/model_bench.py); eval skips a judge from the model's own provider.
+JUDGE = env("JUDGE_CHAIN", "gemini/gemini-3-flash-preview,groq/openai/gpt-oss-20b").split(",")
 DEFAULT_MODEL = env("DEFAULT_MODEL", "mock")  # demo default; pick a live model in the UI
 LLM_TIMEOUT = float(env("LLM_TIMEOUT", "30"))  # a stuck model fails over fast; Gemini drafts take ~20 s
 LLM_MAX_TOKENS = int(env("LLM_MAX_TOKENS", "8192"))
@@ -36,7 +34,6 @@ LLM_MAX_TOKENS = int(env("LLM_MAX_TOKENS", "8192"))
 # Seeded demo user (M2); no password in env = no demo user.
 DEMO_EMAIL = env("DEMO_EMAIL", "admin@joules.app")
 PASSWORD = env("PASSWORD", "")
-SIGNUPS = env("SIGNUPS", "on") == "on"  # "off" on the public deploy: only the seeded login works
 SESSION_DAYS = 7
 
 # Input caps (PRD §16) and in-memory rate limits (NFR-03).
